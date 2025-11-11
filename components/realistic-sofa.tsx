@@ -71,13 +71,10 @@ function Cushion({
         scaleRef.current += (1 - scaleRef.current) * 0.1
         yOffsetRef.current *= 0.9
         
-        // Hover scale
+        // Hover scale - very subtle
         if (isHovered) {
-          scaleRef.current = Math.min(scaleRef.current + 0.01, 1.05)
+          scaleRef.current = Math.min(scaleRef.current + 0.005, 1.02)
         }
-        
-        // Subtle floating animation
-        meshRef.current.rotation.y += 0.0005
       }
       
       meshRef.current.scale.setScalar(scaleRef.current)
@@ -107,8 +104,8 @@ function Cushion({
       <boxGeometry args={size} />
       <meshStandardMaterial
         color={color}
-        roughness={0.6}
-        metalness={0.1}
+        roughness={0.7}
+        metalness={0.05}
       />
     </mesh>
   )
@@ -129,10 +126,15 @@ export function RealisticSofa({
   const darkerColor = fabricColor.clone().multiplyScalar(0.8)
   const lighterColor = fabricColor.clone().multiplyScalar(1.2)
 
-  // Animated rotation on hover
+  // Subtle scale on hover - no rotation
   useFrame((state) => {
-    if (groupRef.current && hovered) {
-      groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.5) * 0.02
+    if (groupRef.current) {
+      // Very subtle scale effect on hover
+      if (hovered) {
+        groupRef.current.scale.setScalar(1.01)
+      } else {
+        groupRef.current.scale.setScalar(1)
+      }
     }
   })
 
@@ -145,84 +147,90 @@ export function RealisticSofa({
     <group
       ref={groupRef}
       position={position}
-      rotation={rotation}
+      rotation={[0, 0, 0]}
       onPointerOver={() => handleHover(true)}
       onPointerOut={() => handleHover(false)}
     >
       {/* Sofa Base - with rounded edges */}
       <mesh position={[0, 0.6, 0]} castShadow receiveShadow>
-        <boxGeometry args={[16.5, 1.2, 3]} />
+        <boxGeometry args={[10.5, 1.2, 3.2]} />
         <meshStandardMaterial
           color={darkerColor.getHex()}
-          roughness={0.7}
-          metalness={0.1}
+          roughness={0.8}
+          metalness={0.05}
         />
       </mesh>
 
       {/* Sofa Frame - wooden structure */}
-      <mesh position={[0, 0.1, 0]} castShadow>
-        <boxGeometry args={[16.5, 0.2, 3]} />
+      <mesh position={[0, 0, 0]} castShadow>
+        <boxGeometry args={[10.5, 0.15, 3.2]} />
         <meshStandardMaterial
-          color="#3a2a1a"
+          color="#2a1a0a"
           roughness={0.9}
           metalness={0.1}
         />
       </mesh>
 
-      {/* Back cushions - with individual animation */}
-      {[-4.5, 0, 4.5].map((x, i) => (
-        <Cushion
-          key={`back-${i}`}
-          position={[x, 1.8, -0.9]}
-          size={[4.8, 2.4, 0.6]}
-          color={selectedCushion === i ? lighterColor.getHex() : "#4a6b7f"}
-          isHovered={hovered && selectedCushion === i}
-          onClick={() => setSelectedCushion(selectedCushion === i ? null : i)}
-        />
+      {/* Back cushions - perfectly aligned in straight line, no gaps */}
+      {[-3.5, 0, 3.5].map((x, i) => (
+        <group key={`back-${i}`} position={[x, 1.8, -0.95]} rotation={[0, 0, 0]}>
+          <Cushion
+            position={[0, 0, 0]}
+            size={[3.5, 2.4, 0.65]}
+            color={selectedCushion === i ? lighterColor.getHex() : "#4a6b7f"}
+            isHovered={hovered && selectedCushion === i}
+            onClick={() => setSelectedCushion(selectedCushion === i ? null : i)}
+          />
+        </group>
       ))}
 
-      {/* Seat cushions - with bounce effect */}
-      {[-4.5, 0, 4.5].map((x, i) => (
-        <Cushion
-          key={`seat-${i}`}
-          position={[x, 0.9, 0.3]}
-          size={[4.8, 0.6, 2.4]}
-          color={selectedCushion === i + 3 ? lighterColor.getHex() : "#638ca1"}
-          isHovered={hovered && selectedCushion === i + 3}
-          onClick={() => setSelectedCushion(selectedCushion === i + 3 ? null : i + 3)}
-        />
+      {/* Seat cushions - perfectly aligned in straight line, no gaps */}
+      {[-3.5, 0, 3.5].map((x, i) => (
+        <group key={`seat-${i}`} position={[x, 0.9, 0.25]} rotation={[0, 0, 0]}>
+          <Cushion
+            position={[0, 0, 0]}
+            size={[3.5, 0.65, 2.5]}
+            color={selectedCushion === i + 3 ? lighterColor.getHex() : "#638ca1"}
+            isHovered={hovered && selectedCushion === i + 3}
+            onClick={() => setSelectedCushion(selectedCushion === i + 3 ? null : i + 3)}
+          />
+        </group>
       ))}
 
-      {/* Armrests - with rounded top */}
-      <mesh position={[-8.25, 0.9, 0]} castShadow receiveShadow>
-        <boxGeometry args={[0.75, 1.8, 3]} />
+      {/* Armrests - integrated with base */}
+      <mesh position={[-5.25, 0.9, 0]} castShadow receiveShadow>
+        <boxGeometry args={[0.75, 1.8, 3.2]} />
         <meshStandardMaterial
           color={hovered ? lighterColor.getHex() : "#4a6b7f"}
-          roughness={0.7}
-          metalness={0.1}
+          roughness={0.8}
+          metalness={0.05}
         />
       </mesh>
-      <mesh position={[8.25, 0.9, 0]} castShadow receiveShadow>
-        <boxGeometry args={[0.75, 1.8, 3]} />
+      <mesh position={[5.25, 0.9, 0]} castShadow receiveShadow>
+        <boxGeometry args={[0.75, 1.8, 3.2]} />
         <meshStandardMaterial
           color={hovered ? lighterColor.getHex() : "#4a6b7f"}
-          roughness={0.7}
-          metalness={0.1}
+          roughness={0.8}
+          metalness={0.05}
         />
       </mesh>
 
-      {/* Decorative seams/stitching */}
-      {[-4.5, 0, 4.5].map((x, i) => (
-        <group key={`seam-${i}`} position={[x, 0.9, 0.3]}>
-          {/* Vertical seam */}
+      {/* Decorative seams/stitching - subtle, between cushions */}
+      {[-1.75, 1.75].map((x, i) => (
+        <group key={`seam-${i}`} position={[x, 0.9, 0.25]}>
+          {/* Vertical seam - very subtle divider between cushions */}
           <mesh position={[0, 0, 0]}>
-            <boxGeometry args={[0.02, 0.6, 2.4]} />
-            <meshStandardMaterial color="#2a3a4a" roughness={0.9} />
+            <boxGeometry args={[0.02, 0.65, 2.5]} />
+            <meshStandardMaterial color="#3a4a5a" roughness={0.95} />
           </mesh>
-          {/* Horizontal seam */}
+        </group>
+      ))}
+      {[-1.75, 1.75].map((x, i) => (
+        <group key={`back-seam-${i}`} position={[x, 1.8, -0.95]}>
+          {/* Vertical seam on back cushions */}
           <mesh position={[0, 0, 0]}>
-            <boxGeometry args={[4.8, 0.02, 2.4]} />
-            <meshStandardMaterial color="#2a3a4a" roughness={0.9} />
+            <boxGeometry args={[0.02, 2.4, 0.65]} />
+            <meshStandardMaterial color="#3a4a5a" roughness={0.95} />
           </mesh>
         </group>
       ))}
@@ -230,7 +238,7 @@ export function RealisticSofa({
       {/* Hover glow effect */}
       {hovered && (
         <mesh position={[0, 1.2, 0]}>
-          <boxGeometry args={[17, 3, 4]} />
+          <boxGeometry args={[11, 3, 4]} />
           <meshBasicMaterial
             color={color}
             transparent
