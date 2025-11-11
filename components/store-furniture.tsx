@@ -1,6 +1,32 @@
 "use client"
 
-export function StoreFurniture() {
+import type { Lamp } from "./store-scene"
+import { RealisticSofa } from "./realistic-sofa"
+
+type StoreFurnitureProps = {
+  onSelectLamp: (lamp: Lamp | null) => void
+}
+
+export function StoreFurniture({ onSelectLamp }: StoreFurnitureProps) {
+  const leftLamp: Lamp = {
+    id: "3",
+    name: "Classic Drum",
+    price: 1650,
+    description: "Elegant floor lamp with drum shade and brass accents",
+    type: "Floor Lamp",
+    colors: ["#f5f5dc", "#1a1a1a", "#b8860b"],
+    features: ["Drum shade design", "Brass pole", "Decorative rings", "Warm LED lighting"],
+  }
+
+  const rightLamp: Lamp = {
+    id: "4",
+    name: "Arc Floor Light",
+    price: 2250,
+    description: "Modern arc floor lamp with adjustable arm and marble base",
+    type: "Floor Lamp",
+    colors: ["#2a2a2a", "#b8860b", "#ffffff"],
+    features: ["Adjustable arc arm", "Marble base", "Gold accents", "Directional lighting"],
+  }
   return (
     <group>
       {/* Rug */}
@@ -9,40 +35,11 @@ export function StoreFurniture() {
         <meshStandardMaterial color="#3d4f5c" roughness={0.9} />
       </mesh>
 
-      {/* Main Sofa - Blue-gray */}
-      <group position={[0, -0.5, 0]}>
-        {/* Sofa base */}
-        <mesh position={[0, 0.6, 0]}>
-          <boxGeometry args={[16.5, 1.2, 3]} />
-          <meshStandardMaterial color="#5a7b8f" roughness={0.7} />
-        </mesh>
-
-        {/* Sofa back cushions */}
-        {[-4.5, 0, 4.5].map((x, i) => (
-          <mesh key={i} position={[x, 1.8, -0.9]}>
-            <boxGeometry args={[4.8, 2.4, 0.6]} />
-            <meshStandardMaterial color="#4a6b7f" roughness={0.6} />
-          </mesh>
-        ))}
-
-        {/* Seat cushions */}
-        {[-4.5, 0, 4.5].map((x, i) => (
-          <mesh key={i} position={[x, 0.9, 0.3]}>
-            <boxGeometry args={[4.8, 0.6, 2.4]} />
-            <meshStandardMaterial color="#638ca1" roughness={0.6} />
-          </mesh>
-        ))}
-
-        {/* Armrests */}
-        <mesh position={[-8.25, 0.9, 0]}>
-          <boxGeometry args={[0.75, 1.8, 3]} />
-          <meshStandardMaterial color="#4a6b7f" roughness={0.7} />
-        </mesh>
-        <mesh position={[8.25, 0.9, 0]}>
-          <boxGeometry args={[0.75, 1.8, 3]} />
-          <meshStandardMaterial color="#4a6b7f" roughness={0.7} />
-        </mesh>
-      </group>
+      {/* Main Sofa - Blue-gray - Realistic version */}
+      <RealisticSofa 
+        position={[0, -0.5, 0]}
+        color="#5a7b8f"
+      />
 
       {/* Coffee Table */}
       <group position={[0, -0.5, 5.4]}>
@@ -117,7 +114,19 @@ export function StoreFurniture() {
       </group>
 
       {/* Left Floor Lamp - Drum shade style */}
-      <group position={[-8, -0.5, -5]}>
+      <group 
+        position={[-8, -0.5, -5]}
+        onClick={(e) => {
+          e.stopPropagation()
+          onSelectLamp(leftLamp)
+        }}
+        onPointerOver={() => {
+          document.body.style.cursor = "pointer"
+        }}
+        onPointerOut={() => {
+          document.body.style.cursor = "default"
+        }}
+      >
         {/* Base */}
         <mesh position={[0, 0.15, 0]}>
           <cylinderGeometry args={[0.6, 0.6, 0.3]} />
@@ -151,11 +160,29 @@ export function StoreFurniture() {
         </mesh>
 
         {/* Light source */}
-        <pointLight position={[0, 5.7, 0]} intensity={150} distance={15} color="#fff5e1" />
+        <pointLight position={[0, 5.7, 0]} intensity={60} distance={15} color="#fff5e1" />
+        
+        {/* Hover glow effect */}
+        <mesh position={[0, 3, 0]}>
+          <sphereGeometry args={[1.2, 16, 16]} />
+          <meshBasicMaterial color="#ffeb3b" transparent opacity={0.05} />
+        </mesh>
       </group>
 
       {/* Right Arc Floor Lamp */}
-      <group position={[8, -0.5, -5]}>
+      <group 
+        position={[8, -0.5, -5]}
+        onClick={(e) => {
+          e.stopPropagation()
+          onSelectLamp(rightLamp)
+        }}
+        onPointerOver={() => {
+          document.body.style.cursor = "pointer"
+        }}
+        onPointerOut={() => {
+          document.body.style.cursor = "default"
+        }}
+      >
         {/* Base - marble */}
         <mesh position={[0, 0.15, 0]}>
           <cylinderGeometry args={[0.75, 0.75, 0.3]} />
@@ -201,8 +228,14 @@ export function StoreFurniture() {
           </mesh>
 
           {/* Light source */}
-          <pointLight position={[3, 5.8, 0]} intensity={180} distance={18} color="#fff5e1" />
+          <pointLight position={[3, 5.8, 0]} intensity={70} distance={18} color="#fff5e1" />
         </group>
+        
+        {/* Hover glow effect */}
+        <mesh position={[0, 3.5, 0]}>
+          <sphereGeometry args={[1.5, 16, 16]} />
+          <meshBasicMaterial color="#ffeb3b" transparent opacity={0.05} />
+        </mesh>
       </group>
     </group>
   )

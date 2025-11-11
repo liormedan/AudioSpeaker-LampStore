@@ -2,6 +2,7 @@
 
 import type { Lamp } from "./store-scene"
 import { useState } from "react"
+import { Lamp3DViewer } from "./lamp-3d-viewer"
 
 type ProductDetailCardProps = {
   lamp: Lamp
@@ -13,37 +14,48 @@ export function ProductDetailCard({ lamp, onClose }: ProductDetailCardProps) {
   const [isFavorite, setIsFavorite] = useState(false)
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-end justify-center p-4 z-50">
-      <div className="bg-background border border-border rounded-lg w-full max-w-2xl p-6 space-y-6 animate-in slide-in-from-bottom-4 duration-300">
+    <div 
+      className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose()
+        }
+      }}
+    >
+      <div className="bg-background border border-border rounded-lg w-full max-w-lg p-4 space-y-4 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-start justify-between">
-          <div>
-            <div className="inline-block px-2 py-1 bg-accent text-accent-foreground text-xs font-medium rounded mb-2">
+        <div className="flex items-start justify-between sticky top-0 bg-background pb-2 z-10">
+          <div className="flex-1">
+            <div className="inline-block px-2 py-1 bg-accent text-accent-foreground text-xs font-medium rounded mb-1">
               {lamp.type}
             </div>
-            <h2 className="text-2xl font-bold">{lamp.name}</h2>
-            <p className="text-3xl font-bold text-primary mt-2">${lamp.price.toLocaleString()}</p>
+            <h2 className="text-xl font-bold">{lamp.name}</h2>
+            <p className="text-2xl font-bold text-primary mt-1">${lamp.price.toLocaleString()}</p>
           </div>
           <button
             onClick={onClose}
-            className="text-muted-foreground hover:text-foreground transition-colors text-2xl leading-none"
+            className="ml-4 w-8 h-8 flex items-center justify-center rounded-full bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground transition-colors text-xl leading-none font-bold"
+            aria-label="Close"
           >
             ×
           </button>
         </div>
 
+        {/* 3D Viewer */}
+        <Lamp3DViewer lamp={lamp} selectedColor={selectedColor} />
+
         {/* Description */}
-        <p className="text-muted-foreground">{lamp.description}</p>
+        <p className="text-sm text-muted-foreground">{lamp.description}</p>
 
         {/* Color Selection */}
         <div>
-          <h3 className="font-semibold mb-3">Available Colors</h3>
+          <h3 className="font-semibold mb-2 text-sm">Available Colors</h3>
           <div className="flex gap-2">
             {lamp.colors.map((color) => (
               <button
                 key={color}
                 onClick={() => setSelectedColor(color)}
-                className={`w-10 h-10 rounded-full border-2 transition-all ${
+                className={`w-8 h-8 rounded-full border-2 transition-all ${
                   selectedColor === color ? "border-primary scale-110" : "border-transparent"
                 }`}
                 style={{ backgroundColor: color }}
@@ -55,27 +67,39 @@ export function ProductDetailCard({ lamp, onClose }: ProductDetailCardProps) {
 
         {/* Features */}
         <div>
-          <h3 className="font-semibold mb-3">Features</h3>
-          <ul className="space-y-2">
+          <h3 className="font-semibold mb-2 text-sm">Features</h3>
+          <ul className="space-y-1">
             {lamp.features.map((feature, idx) => (
               <li key={idx} className="flex items-start gap-2">
-                <span className="text-primary mt-1">•</span>
-                <span className="text-sm text-muted-foreground">{feature}</span>
+                <span className="text-primary mt-0.5 text-xs">•</span>
+                <span className="text-xs text-muted-foreground">{feature}</span>
               </li>
             ))}
           </ul>
         </div>
 
         {/* Actions */}
-        <div className="flex gap-3 pt-4">
+        <div className="flex flex-col gap-2 pt-2 sticky bottom-0 bg-background pb-2">
+          <div className="flex gap-2">
+            <button
+              onClick={() => setIsFavorite(!isFavorite)}
+              className="px-4 py-2 text-sm border border-border rounded-lg hover:bg-accent transition-colors"
+            >
+              {isFavorite ? "♥" : "♡"} {isFavorite ? "Saved" : "Save"}
+            </button>
+            <button className="flex-1 px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-semibold">
+              🛒 Add to Cart
+            </button>
+          </div>
           <button
-            onClick={() => setIsFavorite(!isFavorite)}
-            className="px-6 py-3 border border-border rounded-lg hover:bg-accent transition-colors"
+            onClick={() => {
+              // Handle purchase
+              alert(`Thank you for your purchase! ${lamp.name} has been added to your order.`)
+              onClose()
+            }}
+            className="w-full px-4 py-3 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-lg hover:from-primary/90 hover:to-primary/70 transition-all font-bold shadow-lg hover:shadow-xl transform hover:scale-[1.01]"
           >
-            {isFavorite ? "♥" : "♡"} {isFavorite ? "Saved" : "Save"}
-          </button>
-          <button className="flex-1 px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-semibold">
-            🛒 Add to Cart
+            💳 Buy Now - ${lamp.price.toLocaleString()}
           </button>
         </div>
       </div>
