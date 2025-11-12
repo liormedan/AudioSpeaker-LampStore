@@ -45,7 +45,7 @@ export default function ContactPage() {
             {/* Contact Form */}
             <div className="bg-black/20 backdrop-blur-xl rounded-3xl border border-white/10 p-8 md:p-12">
               <h2 className="text-3xl font-bold mb-8 text-amber-400">Send Us a Message</h2>
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-6" aria-label="Contact form">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-white/80 mb-2">
                     Full Name
@@ -57,9 +57,12 @@ export default function ContactPage() {
                     value={formData.name}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-amber-400 transition-all text-white placeholder-white/40"
+                    aria-required="true"
+                    aria-describedby="name-description"
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/50 transition-all text-white placeholder-white/40"
                     placeholder="John Doe"
                   />
+                  <span id="name-description" className="sr-only">Enter your full name</span>
                 </div>
 
                 <div>
@@ -73,14 +76,17 @@ export default function ContactPage() {
                     value={formData.email}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-amber-400 transition-all text-white placeholder-white/40"
+                    aria-required="true"
+                    aria-describedby="email-description"
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/50 transition-all text-white placeholder-white/40"
                     placeholder="john@example.com"
                   />
+                  <span id="email-description" className="sr-only">Enter your email address</span>
                 </div>
 
                 <div>
                   <label htmlFor="phone" className="block text-sm font-medium text-white/80 mb-2">
-                    Phone Number
+                    Phone Number <span className="text-white/50 text-xs">(optional)</span>
                   </label>
                   <input
                     type="tel"
@@ -88,9 +94,11 @@ export default function ContactPage() {
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-amber-400 transition-all text-white placeholder-white/40"
+                    aria-describedby="phone-description"
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/50 transition-all text-white placeholder-white/40"
                     placeholder="+1 (555) 123-4567"
                   />
+                  <span id="phone-description" className="sr-only">Enter your phone number (optional)</span>
                 </div>
 
                 <div>
@@ -103,15 +111,19 @@ export default function ContactPage() {
                     value={formData.message}
                     onChange={handleChange}
                     required
+                    aria-required="true"
+                    aria-describedby="message-description"
                     rows={5}
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-amber-400 transition-all text-white placeholder-white/40 resize-none"
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/50 transition-all text-white placeholder-white/40 resize-none"
                     placeholder="Tell us about your lighting needs..."
                   />
+                  <span id="message-description" className="sr-only">Enter your message</span>
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full py-4 bg-gradient-to-r from-amber-400 to-amber-600 text-white font-semibold rounded-xl hover:from-amber-500 hover:to-amber-700 transition-all shadow-lg shadow-amber-500/30"
+                  className="w-full py-4 bg-gradient-to-r from-amber-400 to-amber-600 text-white font-semibold rounded-xl hover:from-amber-500 hover:to-amber-700 transition-all shadow-lg shadow-amber-500/30 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-transparent"
+                  aria-label="Submit contact form"
                 >
                   Send Message
                 </button>
@@ -184,7 +196,10 @@ export default function ContactPage() {
                   Schedule a one-on-one session with our lighting designers to create the perfect ambiance for your
                   space.
                 </p>
-                <button className="px-6 py-3 bg-gradient-to-r from-amber-400 to-amber-600 text-white font-semibold rounded-xl hover:from-amber-500 hover:to-amber-700 transition-all shadow-lg shadow-amber-500/30">
+                <button 
+                  className="px-6 py-3 bg-gradient-to-r from-amber-400 to-amber-600 text-white font-semibold rounded-xl hover:from-amber-500 hover:to-amber-700 transition-all shadow-lg shadow-amber-500/30 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-transparent"
+                  aria-label="Schedule a private consultation appointment"
+                >
                   Schedule Appointment
                 </button>
               </div>

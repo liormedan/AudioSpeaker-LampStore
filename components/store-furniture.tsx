@@ -2,6 +2,9 @@
 
 import type { Lamp } from "./store-scene"
 import { RealisticSofa } from "./realistic-sofa"
+import { MarblePBRMaterial } from "./pbr-materials"
+import { RectAreaLightComponent } from "./lighting/rect-area-light"
+import { IESLight } from "./lighting/ies-light"
 
 type StoreFurnitureProps = {
   onSelectLamp: (lamp: Lamp | null) => void
@@ -43,10 +46,10 @@ export function StoreFurniture({ onSelectLamp }: StoreFurnitureProps) {
 
       {/* Coffee Table */}
       <group position={[0, -0.5, 5.4]}>
-        {/* Table top - beige marble */}
+        {/* Table top - beige marble - PBR Material */}
         <mesh position={[0, 1.2, 0]}>
           <boxGeometry args={[6, 0.3, 3.6]} />
-          <meshStandardMaterial color="#d4c5b0" roughness={0.2} metalness={0.3} />
+          <MarblePBRMaterial color="#d4c5b0" roughness={0.2} metalness={0.3} repeat={[1, 1]} />
         </mesh>
 
         {/* Brass legs */}
@@ -159,8 +162,23 @@ export function StoreFurniture({ onSelectLamp }: StoreFurnitureProps) {
           <meshStandardMaterial color="#fffacd" emissive="#fff5e1" emissiveIntensity={0.8} />
         </mesh>
 
-        {/* Light source */}
-        <pointLight position={[0, 5.7, 0]} intensity={60} distance={15} color="#fff5e1" />
+        {/* Light source - IES light for realistic pendant lamp */}
+        <IESLight
+          position={[0, 5.7, 0]}
+          intensity={25}
+          distance={12}
+          color="#fff5e1"
+          profile="pendant"
+        />
+        {/* Additional ambient glow - optimized: RectAreaLight */}
+        <RectAreaLightComponent
+          position={[0, 5.7, 0]}
+          width={0.5}
+          height={0.5}
+          intensity={15}
+          color="#fffacd"
+          rotation={[-Math.PI / 2, 0, 0]}
+        />
         
         {/* Hover glow effect */}
         <mesh position={[0, 3, 0]}>
@@ -227,8 +245,23 @@ export function StoreFurniture({ onSelectLamp }: StoreFurnitureProps) {
             <meshStandardMaterial color="#fffacd" emissive="#fff9c4" emissiveIntensity={1.2} />
           </mesh>
 
-          {/* Light source */}
-          <pointLight position={[3, 5.8, 0]} intensity={70} distance={18} color="#fff5e1" />
+          {/* Light source - IES light for realistic spot distribution */}
+          <IESLight
+            position={[3, 5.8, 0]}
+            intensity={30}
+            distance={15}
+            color="#fff5e1"
+            profile="spot"
+          />
+          {/* Additional ambient glow - optimized: RectAreaLight */}
+          <RectAreaLightComponent
+            position={[3, 5.8, 0]}
+            width={0.4}
+            height={0.4}
+            intensity={18}
+            color="#fffacd"
+            rotation={[-Math.PI / 2, 0, 0]}
+          />
         </group>
         
         {/* Hover glow effect */}

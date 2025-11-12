@@ -2,6 +2,8 @@
 
 import { Canvas } from "@react-three/fiber"
 import { OrbitControls, Environment } from "@react-three/drei"
+import { RectAreaLightComponent } from "./lighting/rect-area-light"
+import { IESLight } from "./lighting/ies-light"
 import type { Lamp } from "./store-scene"
 
 type Lamp3DViewerProps = {
@@ -46,10 +48,23 @@ function LampModel({ lamp, selectedColor }: { lamp: Lamp; selectedColor: string 
           <meshStandardMaterial color="#fffacd" emissive="#fff5e1" emissiveIntensity={1.5} />
         </mesh>
 
-        {/* Light source - brighter in darkness */}
-        <pointLight position={[0, 5.35, 0]} intensity={120} distance={20} color="#fff5e1" />
-        {/* Additional soft glow */}
-        <pointLight position={[0, 5.35, 0]} intensity={40} distance={25} color="#fffacd" />
+        {/* Light source - IES light for realistic pendant lamp distribution */}
+        <IESLight
+          position={[0, 5.35, 0]}
+          intensity={80}
+          distance={20}
+          color="#fff5e1"
+          profile="pendant"
+        />
+        {/* Additional soft glow - RectAreaLight for ambient fill */}
+        <RectAreaLightComponent
+          position={[0, 5.35, 0]}
+          width={0.6}
+          height={0.6}
+          intensity={25}
+          color="#fffacd"
+          rotation={[-Math.PI / 2, 0, 0]}
+        />
       </group>
     )
   }
@@ -102,10 +117,23 @@ function LampModel({ lamp, selectedColor }: { lamp: Lamp; selectedColor: string 
             <meshStandardMaterial color="#fffacd" emissive="#fff9c4" emissiveIntensity={2.0} />
           </mesh>
 
-          {/* Light source - brighter in darkness */}
-          <pointLight position={[3, 5.3, 0]} intensity={140} distance={22} color="#fff5e1" />
+          {/* Light source - IES light for realistic spot distribution */}
+          <IESLight
+            position={[3, 5.3, 0]}
+            intensity={90}
+            distance={22}
+            color="#fff5e1"
+            profile="spot"
+          />
           {/* Additional soft glow */}
-          <pointLight position={[3, 5.3, 0]} intensity={50} distance={28} color="#fffacd" />
+          <RectAreaLightComponent
+            position={[3, 5.3, 0]}
+            width={0.4}
+            height={0.4}
+            intensity={30}
+            color="#fffacd"
+            rotation={[-Math.PI / 2, 0, 0]}
+          />
         </group>
       </group>
     )
@@ -160,9 +188,22 @@ function LampModel({ lamp, selectedColor }: { lamp: Lamp; selectedColor: string 
           </mesh>
         </group>
 
-        {/* Warm light from inside - brighter in darkness */}
-        <pointLight position={[0, 1.2, 0]} intensity={120} distance={15} color="#fff5e1" />
-        <pointLight position={[0, 1.0, 0]} intensity={60} distance={18} color="#fffacd" />
+        {/* Warm light from inside - IES light for realistic table lamp distribution */}
+        <IESLight
+          position={[0, 1.2, 0]}
+          intensity={80}
+          distance={15}
+          color="#fff5e1"
+          profile="table"
+        />
+        <RectAreaLightComponent
+          position={[0, 1.0, 0]}
+          width={0.4}
+          height={0.4}
+          intensity={40}
+          color="#fffacd"
+          rotation={[-Math.PI / 2, 0, 0]}
+        />
 
         {/* Soft glow around lamp */}
         <mesh position={[0, 1.2, 0]}>
@@ -244,24 +285,33 @@ function LampModel({ lamp, selectedColor }: { lamp: Lamp; selectedColor: string 
           </mesh>
         </group>
 
-        {/* Warm LED light from the ring - multiple point lights around the ring - brighter in darkness */}
-        {[0, Math.PI / 4, Math.PI / 2, (3 * Math.PI) / 4, Math.PI, (5 * Math.PI) / 4, (3 * Math.PI) / 2, (7 * Math.PI) / 4].map((angle, i) => {
+        {/* Warm LED light from the ring - optimized: fewer RectAreaLights for better performance */}
+        {[0, Math.PI / 2, Math.PI, (3 * Math.PI) / 2].map((angle, i) => {
           const radius = 0.9
           const x = Math.cos(angle) * radius
           const z = Math.sin(angle) * radius
           return (
-            <pointLight 
+            <RectAreaLightComponent
               key={i}
-              position={[x, 0.9, z]} 
-              intensity={120} 
-              distance={18} 
-              color="#fff5e1" 
+              position={[x, 0.9, z]}
+              width={0.3}
+              height={0.1}
+              intensity={60}
+              color="#fff5e1"
+              rotation={[0, angle + Math.PI / 2, 0]}
             />
           )
         })}
         
-        {/* Additional ambient glow from ring - brighter in darkness */}
-        <pointLight position={[0, 0.9, 0]} intensity={80} distance={20} color="#fffacd" />
+        {/* Additional ambient glow from ring - optimized: RectAreaLight */}
+        <RectAreaLightComponent
+          position={[0, 0.9, 0]}
+          width={0.5}
+          height={0.5}
+          intensity={50}
+          color="#fffacd"
+          rotation={[-Math.PI / 2, 0, 0]}
+        />
       </group>
     )
   }
@@ -287,10 +337,23 @@ function LampModel({ lamp, selectedColor }: { lamp: Lamp; selectedColor: string 
         <meshStandardMaterial color={selectedColor} transparent opacity={0.8} />
       </mesh>
 
-      {/* Light - brighter in darkness */}
-      <pointLight position={[0, 1.4, 0]} intensity={80} distance={15} color="#fff5e1" />
+      {/* Light - IES light for realistic table lamp distribution */}
+      <IESLight
+        position={[0, 1.4, 0]}
+        intensity={50}
+        distance={15}
+        color="#fff5e1"
+        profile="table"
+      />
       {/* Additional soft glow */}
-      <pointLight position={[0, 1.4, 0]} intensity={30} distance={18} color="#fffacd" />
+      <RectAreaLightComponent
+        position={[0, 1.4, 0]}
+        width={0.3}
+        height={0.3}
+        intensity={20}
+        color="#fffacd"
+        rotation={[-Math.PI / 2, 0, 0]}
+      />
 
       {/* Ambient glow - more visible in darkness */}
       <mesh position={[0, 0.6, 0]}>
@@ -310,7 +373,11 @@ export function Lamp3DViewer({ lamp, selectedColor }: Lamp3DViewerProps) {
   const cameraZ = isFloorLamp ? 10 : 7
 
   return (
-    <div className={`w-full ${viewerHeight} rounded-lg overflow-hidden bg-black border border-border relative`}>
+    <div 
+      className={`w-full ${viewerHeight} rounded-lg overflow-hidden bg-black border border-border relative`}
+      role="img"
+      aria-label={`3D interactive viewer for ${lamp.name} lamp. Use mouse or touch to rotate and zoom.`}
+    >
       <Canvas camera={{ position: [0, cameraY, cameraZ], fov: 45 }}>
         {/* Dark ambient - very low */}
         <ambientLight intensity={0.1} />

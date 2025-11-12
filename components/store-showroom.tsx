@@ -1,14 +1,26 @@
 "use client"
 
-import { useState } from "react"
-import { Canvas } from "@react-three/fiber"
-import { OrbitControls, Environment, Text } from "@react-three/drei"
-import { EffectComposer, Bloom, SSAO, ToneMapping } from "@react-three/postprocessing"
+import { useState, useRef, useEffect } from "react"
+import { Canvas, useFrame, useThree } from "@react-three/fiber"
+import { OrbitControls, Environment, Text, PerformanceMonitor, AdaptiveDpr, AdaptiveEvents } from "@react-three/drei"
+import { EffectComposer, Bloom, SSAO } from "@react-three/postprocessing"
 import { StoreFurniture } from "./store-furniture"
 import { LampDisplay } from "./lamp-display"
 import { DimmerControl } from "./dimmer-control"
+import { FloorPBRMaterial, WallPBRMaterial } from "./pbr-materials"
+import { DynamicLighting } from "./lighting/dynamic-lighting"
+import { useStoreEnvironment } from "@/hooks/use-store-environment"
+import { ErrorBoundary } from "./error-boundary"
+import { LoadingOverlay } from "./loading-overlay"
+import { AnimatedGroup } from "./animated-group"
+import { VRToggle } from "./vr-toggle"
+import { PhysicsWorld } from "./physics/physics-world"
+import { PhysicalFloor } from "./physics/physical-floor"
+import { PhysicalLamp } from "./physics/physical-lamp"
+import { ModelPreloader, useModelPreloader } from "./models/model-preloader"
+import { getAllModelPaths } from "./models/model-config"
 import type { Lamp } from "./store-scene"
-import type { DirectionalLight } from "three"
+import type { Group } from "three"
 import { Color } from "three"
 
 type StoreShowroomProps = {
@@ -45,79 +57,129 @@ const DISPLAY_LAMPS: Array<{ lamp: Lamp; position: [number, number, number] }> =
 // Black color for SSAO
 const blackColor = new Color(0, 0, 0)
 
-// Lighting component that responds to darkness level
-function DynamicLighting({ darkness }: { darkness: number }) {
-  // Interpolate between bright and dark with very dramatic range
-  // darkness: 0 = bright (normal), 1 = dark (almost no ambient)
-  // Using exponential curve for more dramatic effect
-  const darknessCurve = Math.pow(darkness, 1.8) // More pronounced curve
-  
-  // Very dark base lighting when dark - almost completely off
-  // This allows ceiling light to be the main light source
-  const ambientIntensity = 0.005 + (0.3 - 0.005) * (1 - darknessCurve)
-  const directionalIntensity = 0.01 + (0.8 - 0.01) * (1 - darknessCurve)
-  const directional2Intensity = 0.005 + (0.3 - 0.005) * (1 - darknessCurve)
-  const spotIntensity = 0.005 + (0.4 - 0.005) * (1 - darknessCurve)
-  const rimIntensity = 0.005 + (0.2 - 0.005) * (1 - darknessCurve)
+// LOD wrapper component for LampDisplay - reduces detail for distant objects
+function LampDisplayWithLOD({ lamp, position, onClick }: { lamp: Lamp; position: [number, number, number]; onClick: () => void }) {
+  const { camera } = useThree()
+  const groupRef = useRef<Group>(null)
+  const [distance, setDistance] = useState(0)
 
+  useFrame(() => {
+    if (groupRef.current) {
+      const dist = camera.position.distanceTo(groupRef.current.position)
+      setDistance(dist)
+    }
+  })
+
+  // Use lower detail for lamps far away - reduces geometry complexity
+  // For now, we render all lamps at full detail, but the distance tracking is in place
+  // Future optimization: implement actual LOD with different geometry levels
   return (
-    <>
-      <ambientLight intensity={ambientIntensity} />
-      <directionalLight 
-        position={[10, 10, 5]} 
-        intensity={directionalIntensity} 
-        castShadow
-      />
-      <directionalLight position={[-5, 8, -5]} intensity={directional2Intensity} />
-      <spotLight 
-        position={[0, 15, 0]} 
-        angle={0.4} 
-        penumbra={1} 
-        intensity={spotIntensity} 
-        castShadow
-        shadow-mapSize={1024}
-      />
-      {/* Additional rim light for depth */}
-      <pointLight position={[-10, 5, 10]} intensity={rimIntensity} color="#fff5e1" />
-    </>
+    <group ref={groupRef} position={position}>
+      <LampDisplay lamp={lamp} position={[0, 0, 0]} onClick={onClick} />
+    </group>
   )
 }
 
 export function StoreShowroom({ onSelectLamp }: StoreShowroomProps) {
   const [darkness, setDarkness] = useState(0.2) // Start at 20% darkness (mostly bright, slight dim)
+  const [isLoading, setIsLoading] = useState(true)
+  const [loadingProgress, setLoadingProgress] = useState(0)
+  const [physicsEnabled, setPhysicsEnabled] = useState(false) // Toggle for physics mode
 
-  // Calculate background color based on darkness - much darker base
-  // darkness: 0 = brighter, 1 = very dark
-  const bgBrightness = Math.round(10 + (40 - 10) * (1 - darkness))
-  const backgroundColor = `rgb(${bgBrightness}, ${bgBrightness + 3}, ${bgBrightness + 5})`
+  // Use custom hook for environment settings
+  const environment = useStoreEnvironment({ darkness })
+  
+  // Preload all lamp models (only if they exist in config)
+  const modelPaths = getAllModelPaths()
+  // Only preload if we have actual model paths (not null)
+  const { isLoading: modelsLoading, progress: modelsProgress } = useModelPreloader(
+    modelPaths.length > 0 ? modelPaths : []
+  )
+
+  // Track loading progress (textures + models)
+  useEffect(() => {
+    // Combine texture loading and model loading progress
+    const totalProgress = (loadingProgress * 0.5) + (modelsProgress * 0.5)
+    
+    if (totalProgress >= 100 && !modelsLoading) {
+      setIsLoading(false)
+    }
+  }, [loadingProgress, modelsProgress, modelsLoading])
+
+  // Simulate texture loading progress (in real app, this would track actual texture loading)
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setLoadingProgress((prev) => {
+        if (prev >= 100) {
+          return 100
+        }
+        return prev + 10
+      })
+    }, 200)
+
+    return () => clearInterval(timer)
+  }, [])
+  
+  // Model preloading is handled by useModelPreloader hook
 
   return (
-    <>
+    <ErrorBoundary>
+      <LoadingOverlay isLoading={isLoading} progress={loadingProgress} message="Loading textures and models..." />
+      {/* Preload models in background */}
+      {modelPaths.length > 0 && (
+        <ModelPreloader 
+          modelPaths={modelPaths}
+          onComplete={() => {
+            console.log("All models preloaded")
+          }}
+        />
+      )}
       <DimmerControl darkness={darkness} onDarknessChange={setDarkness} />
-      <Canvas camera={{ position: [0, 8, 20], fov: 50 }} style={{ background: backgroundColor }}>
-        {/* Dynamic lighting that responds to darkness level */}
-        <DynamicLighting darkness={darkness} />
+      <Canvas 
+        camera={{ position: [0, 8, 20], fov: 50 }} 
+        style={{ background: environment.backgroundColor }}
+        gl={{ 
+          shadowMap: { 
+            enabled: true, 
+            type: 1 // PCFSoftShadowMap
+          } 
+        }}
+      >
+        {/* Performance monitoring */}
+        <PerformanceMonitor />
+        
+        {/* Adaptive performance - adjusts DPR and event handling based on FPS */}
+        <AdaptiveDpr pixelated />
+        <AdaptiveEvents />
+        
+        {/* Dynamic lighting that responds to darkness level - using separated component */}
+        <DynamicLighting config={{ darkness }} />
 
-      {/* Floor */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.5, 0]} receiveShadow>
-        <planeGeometry args={[40, 40]} />
-        <meshStandardMaterial color="#4a3728" roughness={0.8} />
-      </mesh>
+        {/* Physics World - wraps scene with physics simulation */}
+        <PhysicsWorld>
+          {/* Physical Floor - collision surface */}
+          <PhysicalFloor />
 
-      {/* Back Wall */}
+          {/* Floor - PBR Material (visual) */}
+          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.5, 0]} receiveShadow>
+            <planeGeometry args={[40, 40]} />
+            <FloorPBRMaterial color="#4a3728" roughness={0.8} repeat={[6, 6]} />
+          </mesh>
+
+      {/* Back Wall - PBR Material */}
       <mesh position={[0, 5, -10]}>
         <planeGeometry args={[40, 20]} />
-        <meshStandardMaterial color="#2a3439" roughness={0.9} />
+        <WallPBRMaterial color="#2a3439" roughness={0.9} repeat={[1, 1]} />
       </mesh>
 
-      {/* Side Walls */}
+      {/* Side Walls - PBR Material */}
       <mesh position={[-15, 5, 0]} rotation={[0, Math.PI / 2, 0]}>
         <planeGeometry args={[40, 20]} />
-        <meshStandardMaterial color="#2a3439" roughness={0.9} />
+        <WallPBRMaterial color="#2a3439" roughness={0.9} repeat={[1, 1]} />
       </mesh>
       <mesh position={[15, 5, 0]} rotation={[0, -Math.PI / 2, 0]}>
         <planeGeometry args={[40, 20]} />
-        <meshStandardMaterial color="#2a3439" roughness={0.9} />
+        <WallPBRMaterial color="#2a3439" roughness={0.9} repeat={[1, 1]} />
       </mesh>
 
       <Text position={[0, 8, -9.9]} fontSize={1.5} color="#d4af37" anchorX="center" anchorY="middle">
@@ -129,9 +191,25 @@ export function StoreShowroom({ onSelectLamp }: StoreShowroomProps) {
 
       <StoreFurniture onSelectLamp={onSelectLamp} />
 
-      {DISPLAY_LAMPS.map(({ lamp, position }) => (
-        <LampDisplay key={lamp.id} lamp={lamp} position={position} onClick={() => onSelectLamp(lamp)} />
-      ))}
+      {DISPLAY_LAMPS.map(({ lamp, position }) => {
+        // Use PhysicalLamp if physics is enabled, otherwise use regular display
+        if (physicsEnabled) {
+          return (
+            <PhysicalLamp
+              key={lamp.id}
+              lamp={lamp}
+              position={position}
+              onClick={() => onSelectLamp(lamp)}
+              interactive={true} // Allow physics interactions
+            />
+          )
+        }
+        return (
+          <AnimatedGroup key={lamp.id} position={position} hoverScale={1.08} floatIntensity={0.03}>
+            <LampDisplayWithLOD lamp={lamp} position={[0, 0, 0]} onClick={() => onSelectLamp(lamp)} />
+          </AnimatedGroup>
+        )
+      })}
 
       <OrbitControls
         enablePan={true}
@@ -142,10 +220,13 @@ export function StoreShowroom({ onSelectLamp }: StoreShowroomProps) {
         maxPolarAngle={Math.PI / 2}
       />
 
+      {/* VR Toggle - only shows if VR is supported */}
+      <VRToggle />
+
       {/* Environment controlled by dimmer - dims as darkness increases */}
       <Environment 
         preset="city" 
-        environmentIntensity={1 - darkness * 0.9}
+        environmentIntensity={environment.environmentIntensity}
       />
 
       {/* Post-processing effects for realistic rendering */}
@@ -163,7 +244,17 @@ export function StoreShowroom({ onSelectLamp }: StoreShowroomProps) {
           luminanceSmoothing={0.9}
         />
       </EffectComposer>
+        </PhysicsWorld>
       </Canvas>
-    </>
+      
+      {/* Physics Toggle Button - outside Canvas */}
+      <button
+        onClick={() => setPhysicsEnabled(!physicsEnabled)}
+        className="fixed bottom-6 right-6 z-50 bg-black/40 backdrop-blur-md border border-white/10 rounded-lg px-4 py-2 text-white hover:bg-black/60 transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-transparent"
+        aria-label={physicsEnabled ? "Disable physics mode" : "Enable physics mode"}
+      >
+        {physicsEnabled ? "🔒 Lock Physics" : "⚡ Enable Physics"}
+      </button>
+    </ErrorBoundary>
   )
 }

@@ -1,15 +1,50 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
+import { Sun, Moon } from "lucide-react"
 
 type DimmerControlProps = {
   darkness: number // 0 = bright, 1 = dark
   onDarknessChange: (darkness: number) => void
 }
 
+type TimePreset = "day" | "evening" | "night" | "custom"
+
+const TIME_PRESETS: Record<TimePreset, number> = {
+  day: 0.1,
+  evening: 0.4,
+  night: 0.9,
+  custom: -1, // Custom means use current darkness value
+}
+
 export function DimmerControl({ darkness, onDarknessChange }: DimmerControlProps) {
   const [isDragging, setIsDragging] = useState(false)
+  const [activePreset, setActivePreset] = useState<TimePreset>("custom")
   const sliderRef = useRef<HTMLDivElement>(null)
+
+  // Determine active preset based on current darkness value
+  useEffect(() => {
+    const closestPreset = Object.entries(TIME_PRESETS).reduce((closest, [preset, value]) => {
+      if (preset === "custom") return closest
+      const currentDiff = Math.abs(darkness - TIME_PRESETS[closest as TimePreset])
+      const newDiff = Math.abs(darkness - value)
+      return newDiff < currentDiff ? (preset as TimePreset) : closest
+    }, "day" as TimePreset)
+
+    // Only update if significantly different (more than 0.1)
+    if (Math.abs(darkness - TIME_PRESETS[closestPreset]) < 0.1) {
+      setActivePreset(closestPreset)
+    } else {
+      setActivePreset("custom")
+    }
+  }, [darkness])
+
+  const handlePresetClick = (preset: TimePreset) => {
+    if (preset !== "custom" && TIME_PRESETS[preset] !== undefined) {
+      onDarknessChange(TIME_PRESETS[preset])
+      setActivePreset(preset)
+    }
+  }
 
   const calculateDarkness = (clientY: number) => {
     if (!sliderRef.current) return 0.5
@@ -60,18 +95,89 @@ export function DimmerControl({ darkness, onDarknessChange }: DimmerControlProps
   const percentage = Math.round(darkness * 100)
 
   return (
-    <div className="fixed right-6 top-1/2 -translate-y-1/2 z-50 flex flex-col items-center gap-2">
+    <div 
+      className="fixed right-6 top-1/2 -translate-y-1/2 z-50 flex flex-col items-center gap-3"
+      role="group"
+      aria-label="Lighting control"
+    >
+      {/* Time Presets */}
+      <div className="flex flex-col gap-2 bg-black/40 backdrop-blur-md rounded-lg p-2 border border-white/10" role="group" aria-label="Time presets">
+        <button
+          onClick={() => handlePresetClick("day")}
+          className={`p-2 rounded transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-transparent ${
+            activePreset === "day"
+              ? "bg-amber-500 text-white"
+              : "bg-white/10 text-white/70 hover:bg-white/20"
+          }`}
+          aria-label="Set lighting to day mode"
+          aria-pressed={activePreset === "day"}
+          title="Day"
+        >
+          <Sun size={16} aria-hidden="true" />
+        </button>
+        <button
+          onClick={() => handlePresetClick("evening")}
+          className={`p-2 rounded transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-transparent ${
+            activePreset === "evening"
+              ? "bg-amber-500 text-white"
+              : "bg-white/10 text-white/70 hover:bg-white/20"
+          }`}
+          aria-label="Set lighting to evening mode"
+          aria-pressed={activePreset === "evening"}
+          title="Evening"
+        >
+          <Moon size={16} aria-hidden="true" />
+        </button>
+        <button
+          onClick={() => handlePresetClick("night")}
+          className={`p-2 rounded transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-transparent ${
+            activePreset === "night"
+              ? "bg-amber-500 text-white"
+              : "bg-white/10 text-white/70 hover:bg-white/20"
+          }`}
+          aria-label="Set lighting to night mode"
+          aria-pressed={activePreset === "night"}
+          title="Night"
+        >
+          <Moon size={16} className="fill-current" aria-hidden="true" />
+        </button>
+      </div>
+
       {/* Label */}
-      <div className="text-white text-sm font-medium opacity-80">
-        {percentage}%
+      <div 
+        className="text-white text-sm font-medium opacity-80 bg-black/40 backdrop-blur-md rounded px-2 py-1 border border-white/10"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        <span aria-label={`Lighting level: ${percentage} percent`}>{percentage}%</span>
       </div>
 
       {/* Slider Track */}
       <div
         ref={sliderRef}
-        className="relative w-12 h-64 bg-gray-800 rounded-full border-2 border-gray-700 cursor-pointer shadow-lg select-none"
+        className="relative w-12 h-64 bg-gray-800 rounded-full border-2 border-gray-700 cursor-pointer shadow-lg select-none focus-within:ring-2 focus-within:ring-amber-400 focus-within:ring-offset-2 focus-within:ring-offset-transparent"
         onMouseDown={handleMouseDown}
         onClick={handleClick}
+        role="slider"
+        aria-label="Adjust lighting brightness"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={percentage}
+        tabIndex={0}
+        onKeyDown={(e) => {
+          let newValue = darkness
+          if (e.key === "ArrowUp" || e.key === "ArrowRight") {
+            newValue = Math.min(1, darkness + 0.05)
+            onDarknessChange(newValue)
+          } else if (e.key === "ArrowDown" || e.key === "ArrowLeft") {
+            newValue = Math.max(0, darkness - 0.05)
+            onDarknessChange(newValue)
+          } else if (e.key === "Home") {
+            onDarknessChange(0)
+          } else if (e.key === "End") {
+            onDarknessChange(1)
+          }
+        }}
       >
         {/* Active Track (darkness indicator) - fills from top when dark */}
         <div

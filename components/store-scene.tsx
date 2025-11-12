@@ -5,6 +5,7 @@ import { ProductDetailCard } from "./product-detail-card"
 import { useState } from "react"
 import { Navigation } from "./navigation"
 import { ScrollIndicator } from "./scroll-indicator"
+import { ErrorBoundary } from "./error-boundary"
 
 export type Lamp = {
   id: string
@@ -20,13 +21,13 @@ export function StoreScene() {
   const [selectedLamp, setSelectedLamp] = useState<Lamp | null>(null)
 
   return (
-    <>
+    <ErrorBoundary>
       <Navigation />
       <div className="relative w-full h-screen">
         <StoreShowroom onSelectLamp={setSelectedLamp} />
         {selectedLamp && <ProductDetailCard lamp={selectedLamp} onClose={() => setSelectedLamp(null)} />}
       </div>
       <ScrollIndicator />
-    </>
+    </ErrorBoundary>
   )
 }

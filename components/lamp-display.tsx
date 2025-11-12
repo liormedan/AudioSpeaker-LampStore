@@ -1,6 +1,10 @@
 "use client"
 
-import { useRef } from "react"
+import { useRef, Suspense } from "react"
+import { RectAreaLightComponent } from "./lighting/rect-area-light"
+import { IESLight } from "./lighting/ies-light"
+import { ModelLampWrapper } from "./models/model-lamp-wrapper"
+import { getLampModelConfig } from "./models/model-config"
 import type { Mesh } from "three"
 import type { Lamp } from "./store-scene"
 
@@ -8,10 +12,40 @@ type LampDisplayProps = {
   lamp: Lamp
   position: [number, number, number]
   onClick: () => void
+  /**
+   * Whether to use GLB/GLTF models if available
+   * Falls back to primitive geometry if model is not found
+   */
+  useModel?: boolean
 }
 
-export function LampDisplay({ lamp, position, onClick }: LampDisplayProps) {
+export function LampDisplay({ lamp, position, onClick, useModel = true }: LampDisplayProps) {
   const meshRef = useRef<Mesh>(null)
+  
+  // Try to get model configuration
+  const modelConfig = useModel ? getLampModelConfig(lamp.id) : null
+  
+  // If model is available, try to use ModelLampWrapper component
+  // If model fails to load (404), it will fall back to primitives automatically
+  if (modelConfig?.modelPath) {
+    try {
+      return (
+        <ModelLampWrapper
+          lamp={lamp}
+          position={position}
+          onClick={onClick}
+          modelPath={modelConfig.modelPath}
+          scale={modelConfig.scale}
+          addLighting={true}
+        />
+      )
+    } catch (error) {
+      // If model loading fails, fall back to primitives
+      // This will be handled by the component itself, but we have a safety net here
+    }
+  }
+  
+  // Fallback to primitive geometry (when modelPath is null or model doesn't exist)
 
   // Modern Minimalist (id: 1) - Clean modern table lamp
   if (lamp.id === "1") {
@@ -82,9 +116,23 @@ export function LampDisplay({ lamp, position, onClick }: LampDisplayProps) {
             </mesh>
           </group>
 
-          {/* Warm light from inside */}
-          <pointLight position={[0, 1.2, 0]} intensity={50} distance={10} color="#fff5e1" />
-          <pointLight position={[0, 1.0, 0]} intensity={25} distance={12} color="#fffacd" />
+          {/* Warm light from inside - IES light for realistic table lamp */}
+          <IESLight
+            position={[0, 1.2, 0]}
+            intensity={15}
+            distance={8}
+            color="#fff5e1"
+            profile="table"
+          />
+          {/* Additional ambient glow - optimized: smaller RectAreaLight */}
+          <RectAreaLightComponent
+            position={[0, 1.0, 0]}
+            width={0.4}
+            height={0.4}
+            intensity={8}
+            color="#fffacd"
+            rotation={[-Math.PI / 2, 0, 0]}
+          />
 
           {/* Soft glow around lamp */}
           <mesh position={[0, 1.2, 0]}>
@@ -205,24 +253,33 @@ export function LampDisplay({ lamp, position, onClick }: LampDisplayProps) {
             </mesh>
           </group>
 
-          {/* Warm LED light from the ring - multiple point lights around the ring */}
-          {[0, Math.PI / 4, Math.PI / 2, (3 * Math.PI) / 4, Math.PI, (5 * Math.PI) / 4, (3 * Math.PI) / 2, (7 * Math.PI) / 4].map((angle, i) => {
+          {/* Warm LED light from the ring - optimized: RectAreaLights for better performance */}
+          {[0, Math.PI / 2, Math.PI, (3 * Math.PI) / 2].map((angle, i) => {
             const radius = 0.9
             const x = Math.cos(angle) * radius
             const z = Math.sin(angle) * radius
             return (
-              <pointLight 
+              <RectAreaLightComponent
                 key={i}
-                position={[x, 0.9, z]} 
-                intensity={35} 
-                distance={12} 
-                color="#fff5e1" 
+                position={[x, 0.9, z]}
+                width={0.3}
+                height={0.1}
+                intensity={20}
+                color="#fff5e1"
+                rotation={[0, angle + Math.PI / 2, 0]}
               />
             )
           })}
           
-          {/* Additional ambient glow from ring */}
-          <pointLight position={[0, 0.9, 0]} intensity={25} distance={15} color="#fffacd" />
+          {/* Additional ambient glow from ring - optimized: RectAreaLight */}
+          <RectAreaLightComponent
+            position={[0, 0.9, 0]}
+            width={0.5}
+            height={0.5}
+            intensity={12}
+            color="#fffacd"
+            rotation={[-Math.PI / 2, 0, 0]}
+          />
         </group>
 
         {/* Price tag */}
@@ -275,8 +332,15 @@ export function LampDisplay({ lamp, position, onClick }: LampDisplayProps) {
           <meshStandardMaterial color={lamp.colors[0]} transparent opacity={0.8} />
         </mesh>
 
-        {/* Light */}
-        <pointLight position={[0, 1.4, 0]} intensity={50} distance={8} color="#fff5e1" />
+        {/* Light - optimized: RectAreaLight for better performance */}
+        <RectAreaLightComponent
+          position={[0, 1.4, 0]}
+          width={0.6}
+          height={0.6}
+          intensity={12}
+          color="#fff5e1"
+          rotation={[-Math.PI / 2, 0, 0]}
+        />
 
         {/* Hover glow */}
         <mesh position={[0, 0.6, 0]}>

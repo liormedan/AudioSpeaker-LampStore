@@ -107,13 +107,15 @@ export default function AboutPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href="/"
-                className="px-8 py-4 bg-gradient-to-r from-amber-400 to-amber-600 text-white font-semibold rounded-full hover:from-amber-500 hover:to-amber-700 transition-all shadow-lg shadow-amber-500/50"
+                className="px-8 py-4 bg-gradient-to-r from-amber-400 to-amber-600 text-white font-semibold rounded-full hover:from-amber-500 hover:to-amber-700 transition-all shadow-lg shadow-amber-500/50 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-transparent"
+                aria-label="Explore our lamp collection"
               >
                 Explore Collection
               </Link>
               <a
-                href="#contact"
-                className="px-8 py-4 bg-white/10 backdrop-blur-xl text-white font-semibold rounded-full border border-white/20 hover:bg-white/20 transition-all"
+                href="/contact"
+                className="px-8 py-4 bg-white/10 backdrop-blur-xl text-white font-semibold rounded-full border border-white/20 hover:bg-white/20 transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-transparent"
+                aria-label="Contact LUMIÈRE"
               >
                 Contact Us
               </a>

@@ -1,30 +1,118 @@
-# 3D lamp shop
+# LUMIÈRE - Luxury Lighting Collection
 
-*Automatically synced with your [v0.app](https://v0.app) deployments*
+A modern 3D e-commerce showcase for premium lighting fixtures built with Next.js, React Three Fiber, and Three.js.
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/liormedans-projects/v0-3-d-lamp-shop)
-[![Built with v0](https://img.shields.io/badge/Built%20with-v0.app-black?style=for-the-badge)](https://v0.app/chat/nlrpw397PNs)
+## Features
 
-## Overview
+- 🎨 **3D Product Visualization** - Interactive 3D models of luxury lamps
+- 💡 **Realistic Lighting** - IES lights, RectAreaLights, and dynamic lighting controls
+- ⚡ **Physics Simulation** - Optional physics interactions with Rapier
+- 🎯 **High-Poly Models** - Support for GLB/GLTF models with preloading
+- 🌐 **VR Support** - WebXR integration for immersive experiences
+- ♿ **Accessible** - Full ARIA labels and keyboard navigation
+- 🔍 **SEO Optimized** - Comprehensive metadata and Open Graph tags
 
-This repository will stay in sync with your deployed chats on [v0.app](https://v0.app).
-Any changes you make to your deployed app will be automatically pushed to this repository from [v0.app](https://v0.app).
+## Getting Started
 
-## Deployment
+### Prerequisites
 
-Your project is live at:
+- Node.js 18+ 
+- pnpm (or npm/yarn)
 
-**[https://vercel.com/liormedans-projects/v0-3-d-lamp-shop](https://vercel.com/liormedans-projects/v0-3-d-lamp-shop)**
+### Installation
 
-## Build your app
+```bash
+# Install dependencies
+pnpm install
 
-Continue building your app on:
+# Run development server
+pnpm dev
 
-**[https://v0.app/chat/nlrpw397PNs](https://v0.app/chat/nlrpw397PNs)**
+# Build for production
+pnpm build
 
-## How It Works
+# Start production server
+pnpm start
+```
 
-1. Create and modify your project using [v0.app](https://v0.app)
-2. Deploy your chats from the v0 interface
-3. Changes are automatically pushed to this repository
-4. Vercel deploys the latest version from this repository
+## Project Structure
+
+```
+lamp-shop/
+├── app/                    # Next.js app directory
+│   ├── layout.tsx         # Root layout with metadata
+│   ├── page.tsx           # Home page
+│   ├── about/             # About page
+│   └── contact/           # Contact page
+├── components/            # React components
+│   ├── lighting/          # Lighting components (IES, RectArea, Dynamic)
+│   ├── models/            # 3D model components (GLB/GLTF)
+│   ├── physics/           # Physics components (Rapier)
+│   └── ...                # Other components
+├── hooks/                 # Custom React hooks
+│   ├── use-model-loader.ts
+│   ├── use-lamp-lighting.ts
+│   └── use-store-environment.ts
+├── public/                # Static assets
+│   ├── models/            # GLB/GLTF model files
+│   ├── textures/          # PBR texture maps
+│   └── hdr/               # HDRI environment maps
+└── lib/                   # Utility functions
+```
+
+## Adding 3D Models
+
+To add GLB/GLTF models for lamps:
+
+1. Place model files in `public/models/`
+2. Update `components/models/model-config.ts` with model paths:
+
+```typescript
+export const LAMP_MODELS: Record<string, LampModelConfig> = {
+  "1": {
+    id: "1",
+    modelPath: "/models/lamp-modern-minimalist.glb",
+    scale: 1,
+    lightingPosition: [0, 1.2, 0],
+  },
+  // ... more models
+}
+```
+
+The system will automatically:
+- Preload models on app start
+- Fall back to primitive geometry if models aren't found
+- Apply proper lighting and shadows
+
+## Features in Detail
+
+### Lighting System
+- **IES Lights**: Realistic light distribution patterns
+- **RectAreaLights**: Efficient area lighting
+- **Dynamic Lighting**: Responds to day/night slider
+- **Optimized Shadows**: Adaptive shadow map quality
+
+### Physics
+- Enable/disable physics mode with toggle button
+- Interactive lamps that can be knocked over
+- Realistic collisions and gravity
+
+### Performance
+- LOD (Level of Detail) for distant objects
+- Adaptive DPR and event handling
+- Model preloading
+- Texture optimization
+
+## Technologies
+
+- **Next.js 16** - React framework
+- **React Three Fiber** - 3D rendering
+- **Three.js** - 3D graphics library
+- **@react-three/drei** - Useful helpers
+- **@react-three/rapier** - Physics engine
+- **TypeScript** - Type safety
+- **Tailwind CSS** - Styling
+
+## License
+
+MIT
