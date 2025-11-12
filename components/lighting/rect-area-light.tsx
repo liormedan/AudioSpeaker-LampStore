@@ -35,10 +35,11 @@ export function RectAreaLightComponent({
   // Initialize RectAreaLightUniformsLib once
   useEffect(() => {
     if (!initialized) {
-      RectAreaLightUniformsLib.init(gl.getContext() as WebGLRenderingContext)
+      // RectAreaLightUniformsLib.init() doesn't take parameters in newer versions
+      RectAreaLightUniformsLib.init()
       initialized = true
     }
-  }, [gl])
+  }, [])
 
   // Create light instance
   const light = useMemo(() => {
