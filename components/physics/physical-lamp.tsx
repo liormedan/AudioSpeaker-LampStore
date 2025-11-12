@@ -87,7 +87,7 @@ export function PhysicalLamp({
       mass={mass}
       restitution={restitution}
       friction={friction}
-      type={interactive ? "dynamic" : "kinematicPositionBased"} // Dynamic when interactive, kinematic otherwise
+      type={interactive ? "dynamic" : "fixed"} // Dynamic when interactive, fixed otherwise
       colliders="hull" // Use convex hull for better performance
       onCollisionEnter={(e) => {
         // Optional: handle collision events

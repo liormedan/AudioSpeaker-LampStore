@@ -182,6 +182,9 @@ importers:
       three:
         specifier: latest
         version: 0.181.0
+      three-stdlib:
+        specifier: ^2.36.1
+        version: 2.36.1(three@0.181.0)
       vaul:
         specifier: ^0.9.9
         version: 0.9.9(@types/react-dom@19.0.0)(@types/react@19.0.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -4213,8 +4216,8 @@ packages:
     peerDependencies:
       three: '>= 0.159.0'
 
-  three-stdlib@2.36.0:
-    resolution: {integrity: sha512-kv0Byb++AXztEGsULgMAs8U2jgUdz6HPpAB/wDJnLiLlaWQX2APHhiTJIN7rqW+Of0eRgcp7jn05U1BsCP3xBA==}
+  three-stdlib@2.36.1:
+    resolution: {integrity: sha512-XyGQrFmNQ5O/IoKm556ftwKsBg11TIb301MB5dWNicziQBEs2g3gtOYIf7pFiLa0zI2gUwhtCjv9fmjnxKZ1Cg==}
     peerDependencies:
       three: '>=0.128.0'
 
@@ -6590,7 +6593,7 @@ snapshots:
       suspend-react: 0.1.3(react@19.2.0)
       three: 0.181.0
       three-mesh-bvh: 0.8.3(three@0.181.0)
-      three-stdlib: 2.36.0(three@0.181.0)
+      three-stdlib: 2.36.1(three@0.181.0)
       troika-three-text: 0.52.4(three@0.181.0)
       tunnel-rat: 0.1.2(@types/react@19.0.0)(react@19.2.0)
       use-sync-external-store: 1.6.0(react@19.2.0)
@@ -6648,7 +6651,7 @@ snapshots:
       react: 19.2.0
       suspend-react: 0.1.3(react@19.2.0)
       three: 0.181.0
-      three-stdlib: 2.36.0(three@0.181.0)
+      three-stdlib: 2.36.1(three@0.181.0)
 
   '@sinclair/typebox@0.27.8': {}
 
@@ -9153,7 +9156,7 @@ snapshots:
     dependencies:
       three: 0.181.0
 
-  three-stdlib@2.36.0(three@0.181.0):
+  three-stdlib@2.36.1(three@0.181.0):
     dependencies:
       '@types/draco3d': 1.4.10
       '@types/offscreencanvas': 2019.7.3

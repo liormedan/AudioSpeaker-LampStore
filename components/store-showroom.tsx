@@ -138,12 +138,7 @@ export function StoreShowroom({ onSelectLamp }: StoreShowroomProps) {
       <Canvas 
         camera={{ position: [0, 8, 20], fov: 50 }} 
         style={{ background: environment.backgroundColor }}
-        gl={{ 
-          shadowMap: { 
-            enabled: true, 
-            type: 1 // PCFSoftShadowMap
-          } 
-        }}
+        shadows
       >
         {/* Performance monitoring */}
         <PerformanceMonitor />

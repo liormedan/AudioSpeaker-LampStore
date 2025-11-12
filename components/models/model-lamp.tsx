@@ -2,7 +2,8 @@
 
 import { useRef, useMemo, Suspense } from "react"
 import { useGLTF } from "@react-three/drei"
-import type { Group, Mesh } from "three"
+import type { Group } from "three"
+import { Mesh } from "three"
 import type { GLTF } from "three-stdlib"
 import type { Lamp } from "../store-scene"
 import { IESLight } from "../lighting/ies-light"
@@ -48,7 +49,7 @@ export function ModelLampInternal({
   // This component should only be rendered when modelPath exists
   // useGLTF will throw if model doesn't exist, which Suspense will catch
   let gltf: GLTF | null = null
-  let modelScene: THREE.Group | null = null
+  let modelScene: Group | null = null
   
   try {
     gltf = useGLTF(modelPath!, true) as GLTF

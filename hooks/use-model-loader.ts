@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react"
 import { useGLTF } from "@react-three/drei"
+import type { Group } from "three"
 import type { GLTF } from "three-stdlib"
 
 type ModelLoadState = {
@@ -11,7 +12,7 @@ type ModelLoadState = {
 }
 
 type UseModelLoaderResult = {
-  scene: THREE.Group | null
+  scene: Group | null
   isLoading: boolean
   error: Error | null
   progress: number

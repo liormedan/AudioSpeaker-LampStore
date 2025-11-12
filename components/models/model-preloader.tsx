@@ -61,10 +61,11 @@ export function ModelPreloader({
             resolve()
           },
           undefined,
-          (error) => {
+          (error: unknown) => {
             // Silently handle 404s - models are optional
             // Only log if it's not a 404 (file not found)
-            if (error && !error.message?.includes("404") && !error.message?.includes("Not Found")) {
+            const errorMessage = error instanceof Error ? error.message : String(error)
+            if (error && !errorMessage.includes("404") && !errorMessage.includes("Not Found")) {
               console.warn(`Failed to preload model ${path}:`, error)
             }
             completed++
@@ -128,10 +129,11 @@ export function useModelPreloader(modelPaths: string[]) {
           }
         },
         undefined,
-        (error) => {
+        (error: unknown) => {
           // Silently handle 404s - models are optional
           // Only log if it's not a 404 (file not found)
-          if (error && !error.message?.includes("404") && !error.message?.includes("Not Found")) {
+          const errorMessage = error instanceof Error ? error.message : String(error)
+          if (error && !errorMessage.includes("404") && !errorMessage.includes("Not Found")) {
             console.warn(`Failed to preload model ${path}:`, error)
           }
           completed++

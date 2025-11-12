@@ -177,7 +177,7 @@ export function RealisticSofa({
           <Cushion
             position={[0, 0, 0]}
             size={[3.5, 2.4, 0.65]}
-            color={selectedCushion === i ? lighterColor.getHex() : "#4a6b7f"}
+            color={selectedCushion === i ? `#${lighterColor.getHexString()}` : "#4a6b7f"}
             isHovered={hovered && selectedCushion === i}
             onClick={() => setSelectedCushion(selectedCushion === i ? null : i)}
           />
@@ -190,7 +190,7 @@ export function RealisticSofa({
           <Cushion
             position={[0, 0, 0]}
             size={[3.5, 0.65, 2.5]}
-            color={selectedCushion === i + 3 ? lighterColor.getHex() : "#638ca1"}
+            color={selectedCushion === i + 3 ? `#${lighterColor.getHexString()}` : "#638ca1"}
             isHovered={hovered && selectedCushion === i + 3}
             onClick={() => setSelectedCushion(selectedCushion === i + 3 ? null : i + 3)}
           />
@@ -201,7 +201,7 @@ export function RealisticSofa({
       <mesh position={[-5.25, 0.9, 0]} castShadow receiveShadow>
         <boxGeometry args={[0.75, 1.8, 3.2]} />
         <meshStandardMaterial
-          color={hovered ? lighterColor.getHex() : "#4a6b7f"}
+          color={hovered ? `#${lighterColor.getHexString()}` : "#4a6b7f"}
           roughness={0.8}
           metalness={0.05}
         />
@@ -209,7 +209,7 @@ export function RealisticSofa({
       <mesh position={[5.25, 0.9, 0]} castShadow receiveShadow>
         <boxGeometry args={[0.75, 1.8, 3.2]} />
         <meshStandardMaterial
-          color={hovered ? lighterColor.getHex() : "#4a6b7f"}
+          color={hovered ? `#${lighterColor.getHexString()}` : "#4a6b7f"}
           roughness={0.8}
           metalness={0.05}
         />
