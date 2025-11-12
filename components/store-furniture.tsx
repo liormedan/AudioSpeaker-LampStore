@@ -5,6 +5,7 @@ import { RealisticSofa } from "./realistic-sofa"
 import { MarblePBRMaterial } from "./pbr-materials"
 import { RectAreaLightComponent } from "./lighting/rect-area-light"
 import { IESLight } from "./lighting/ies-light"
+import { LampDisplay } from "./lamp-display"
 
 type StoreFurnitureProps = {
   onSelectLamp: (lamp: Lamp | null) => void
@@ -64,6 +65,106 @@ export function StoreFurniture({ onSelectLamp }: StoreFurnitureProps) {
             <meshStandardMaterial color="#b8860b" metalness={0.8} roughness={0.2} />
           </mesh>
         ))}
+
+        {/* Table Lamp on Coffee Table - Different design */}
+        <group 
+          position={[0, 1.35, 0]}
+          onClick={(e) => {
+            e.stopPropagation()
+            onSelectLamp({
+              id: "table-lamp-1",
+              name: "Elegant Brass Table Lamp",
+              price: 1650,
+              description: "Classic table lamp with brass base and fabric shade",
+              type: "Table Lamp",
+              colors: ["#d4af37", "#2a2a2a", "#f5f5dc"],
+              features: ["Brass base", "Fabric shade", "Warm lighting", "Classic design"],
+            })
+          }}
+          onPointerOver={() => {
+            document.body.style.cursor = "pointer"
+          }}
+          onPointerOut={() => {
+            document.body.style.cursor = "default"
+          }}
+        >
+          {/* Base - brass, circular/round design */}
+          <mesh position={[0, 0, 0]}>
+            <cylinderGeometry args={[0.5, 0.5, 0.2, 64]} />
+            <meshStandardMaterial color="#d4af37" roughness={0.3} metalness={0.9} />
+          </mesh>
+
+          {/* Decorative ring on base - circular (top ring only) */}
+          <mesh position={[0, 0.1, 0]}>
+            <torusGeometry args={[0.48, 0.02, 16, 64]} />
+            <meshStandardMaterial color="#b8860b" roughness={0.2} metalness={0.95} />
+          </mesh>
+
+          {/* Pole - brass, slightly curved design */}
+          <mesh position={[0, 0.4, 0]}>
+            <cylinderGeometry args={[0.04, 0.04, 0.8, 16]} />
+            <meshStandardMaterial color="#daa520" roughness={0.2} metalness={0.9} />
+          </mesh>
+
+          {/* Shade - fabric, bell-shaped (wider at bottom) */}
+          <group position={[0, 1.1, 0]}>
+            {/* Outer shade - fabric texture, cream color */}
+            <mesh>
+              <coneGeometry args={[0.5, 0.7, 32, 1, true]} />
+              <meshStandardMaterial 
+                color="#f5f5dc" 
+                roughness={0.9} 
+                metalness={0.0}
+                transparent
+                opacity={0.85}
+                side={2}
+              />
+            </mesh>
+
+            {/* Inner lining - gold/brass */}
+            <mesh>
+              <coneGeometry args={[0.48, 0.68, 32, 1, true]} />
+              <meshStandardMaterial 
+                color="#daa520" 
+                emissive="#ffd700" 
+                emissiveIntensity={0.3}
+                roughness={0.4} 
+                metalness={0.7}
+                side={1}
+              />
+            </mesh>
+
+            {/* Top ring - brass */}
+            <mesh position={[0, 0.35, 0]}>
+              <torusGeometry args={[0.49, 0.03, 16, 32]} />
+              <meshStandardMaterial color="#b8860b" roughness={0.2} metalness={0.9} />
+            </mesh>
+
+            {/* Bottom ring - brass */}
+            <mesh position={[0, -0.35, 0]}>
+              <torusGeometry args={[0.5, 0.03, 16, 32]} />
+              <meshStandardMaterial color="#b8860b" roughness={0.2} metalness={0.9} />
+            </mesh>
+          </group>
+
+          {/* Light source - IES light */}
+          <IESLight
+            position={[0, 1.1, 0]}
+            intensity={10}
+            distance={10}
+            color="#fff5e1"
+            profile="table"
+          />
+          {/* Additional ambient glow */}
+          <RectAreaLightComponent
+            position={[0, 0.9, 0]}
+            width={0.5}
+            height={0.5}
+            intensity={6}
+            color="#fffacd"
+            rotation={[-Math.PI / 2, 0, 0]}
+          />
+        </group>
       </group>
 
       {/* Left Armchair - Wine red */}
@@ -180,11 +281,6 @@ export function StoreFurniture({ onSelectLamp }: StoreFurnitureProps) {
           rotation={[-Math.PI / 2, 0, 0]}
         />
         
-        {/* Hover glow effect */}
-        <mesh position={[0, 3, 0]}>
-          <sphereGeometry args={[1.2, 16, 16]} />
-          <meshBasicMaterial color="#ffeb3b" transparent opacity={0.05} />
-        </mesh>
       </group>
 
       {/* Right Arc Floor Lamp */}
@@ -264,11 +360,6 @@ export function StoreFurniture({ onSelectLamp }: StoreFurnitureProps) {
           />
         </group>
         
-        {/* Hover glow effect */}
-        <mesh position={[0, 3.5, 0]}>
-          <sphereGeometry args={[1.5, 16, 16]} />
-          <meshBasicMaterial color="#ffeb3b" transparent opacity={0.05} />
-        </mesh>
       </group>
     </group>
   )

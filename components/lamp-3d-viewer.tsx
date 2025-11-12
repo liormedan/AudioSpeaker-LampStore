@@ -205,11 +205,6 @@ function LampModel({ lamp, selectedColor }: { lamp: Lamp; selectedColor: string 
           rotation={[-Math.PI / 2, 0, 0]}
         />
 
-        {/* Soft glow around lamp */}
-        <mesh position={[0, 1.2, 0]}>
-          <sphereGeometry args={[0.7, 16, 16]} />
-          <meshBasicMaterial color="#fffacd" transparent opacity={0.2} />
-        </mesh>
       </group>
     )
   }
@@ -355,11 +350,6 @@ function LampModel({ lamp, selectedColor }: { lamp: Lamp; selectedColor: string 
         rotation={[-Math.PI / 2, 0, 0]}
       />
 
-      {/* Ambient glow - more visible in darkness */}
-      <mesh position={[0, 0.6, 0]}>
-        <sphereGeometry args={[0.9, 16, 16]} />
-        <meshBasicMaterial color="#ffeb3b" transparent opacity={0.15} />
-      </mesh>
     </group>
   )
 }

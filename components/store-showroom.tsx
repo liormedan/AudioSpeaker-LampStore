@@ -81,7 +81,7 @@ function LampDisplayWithLOD({ lamp, position, onClick }: { lamp: Lamp; position:
 }
 
 export function StoreShowroom({ onSelectLamp }: StoreShowroomProps) {
-  const [darkness, setDarkness] = useState(0.2) // Start at 20% darkness (mostly bright, slight dim)
+  const [darkness, setDarkness] = useState(0.9) // Start at 90% darkness (dark/night mode by default)
   const [isLoading, setIsLoading] = useState(true)
   const [loadingProgress, setLoadingProgress] = useState(0)
   const [physicsEnabled, setPhysicsEnabled] = useState(false) // Toggle for physics mode
