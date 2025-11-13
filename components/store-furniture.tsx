@@ -1,11 +1,39 @@
 "use client"
 
+import { useMemo } from "react"
+import * as THREE from "three"
 import type { Lamp } from "./store-scene"
 import { RealisticSofa } from "./realistic-sofa"
 import { MarblePBRMaterial } from "./pbr-materials"
 import { RectAreaLightComponent } from "./lighting/rect-area-light"
 import { IESLight } from "./lighting/ies-light"
 import { LampDisplay } from "./lamp-display"
+
+// Helper function to create rounded box geometry
+function createRoundedBoxGeometry(width: number, height: number, depth: number, radius: number = 0.1) {
+  const shape = new THREE.Shape()
+  const w = width / 2
+  const h = height / 2
+  shape.moveTo(-w + radius, -h)
+  shape.lineTo(w - radius, -h)
+  shape.quadraticCurveTo(w, -h, w, -h + radius)
+  shape.lineTo(w, h - radius)
+  shape.quadraticCurveTo(w, h, w - radius, h)
+  shape.lineTo(-w + radius, h)
+  shape.quadraticCurveTo(-w, h, -w, h - radius)
+  shape.lineTo(-w, -h + radius)
+  shape.quadraticCurveTo(-w, -h, -w + radius, -h)
+  
+  const extrudeSettings = {
+    depth: depth - radius * 2,
+    bevelEnabled: true,
+    bevelThickness: radius,
+    bevelSize: radius,
+    bevelSegments: 8,
+  }
+  
+  return new THREE.ExtrudeGeometry(shape, extrudeSettings)
+}
 
 type StoreFurnitureProps = {
   onSelectLamp: (lamp: Lamp | null) => void
@@ -168,51 +196,43 @@ export function StoreFurniture({ onSelectLamp }: StoreFurnitureProps) {
       </group>
 
       {/* Left Armchair - Wine red */}
-      <group position={[-6.6, -0.5, 3]} rotation={[0, Math.PI / 4, 0]}>
-        {/* Seat */}
-        <mesh position={[0, 0.6, 0]}>
-          <boxGeometry args={[2.7, 0.6, 2.7]} />
+      <group position={[-8.5, -0.5, 3]} rotation={[0, Math.PI / 4, 0]}>
+        {/* Seat - rounded edges */}
+        <mesh position={[0, 0.9, 0]} geometry={createRoundedBoxGeometry(2.7, 0.6, 2.7, 0.1)}>
           <meshStandardMaterial color="#6b2c3e" roughness={0.6} />
         </mesh>
 
-        {/* Back */}
-        <mesh position={[0, 1.5, -1.05]}>
-          <boxGeometry args={[2.7, 2.4, 0.6]} />
+        {/* Back - rounded edges */}
+        <mesh position={[0, 1.5, -1.05]} geometry={createRoundedBoxGeometry(2.7, 2.4, 0.6, 0.1)}>
           <meshStandardMaterial color="#5a2333" roughness={0.6} />
         </mesh>
 
-        {/* Armrests */}
-        <mesh position={[-1.35, 0.9, 0]}>
-          <boxGeometry args={[0.3, 1.2, 2.7]} />
+        {/* Armrests - rounded edges */}
+        <mesh position={[-1.35, 0.9, 0]} geometry={createRoundedBoxGeometry(0.3, 1.2, 2.7, 0.08)}>
           <meshStandardMaterial color="#5a2333" roughness={0.7} />
         </mesh>
-        <mesh position={[1.35, 0.9, 0]}>
-          <boxGeometry args={[0.3, 1.2, 2.7]} />
+        <mesh position={[1.35, 0.9, 0]} geometry={createRoundedBoxGeometry(0.3, 1.2, 2.7, 0.08)}>
           <meshStandardMaterial color="#5a2333" roughness={0.7} />
         </mesh>
       </group>
 
       {/* Right Armchair - Emerald green */}
-      <group position={[6.6, -0.5, 3]} rotation={[0, -Math.PI / 4, 0]}>
-        {/* Seat */}
-        <mesh position={[0, 0.6, 0]}>
-          <boxGeometry args={[2.7, 0.6, 2.7]} />
+      <group position={[8.5, -0.5, 3]} rotation={[0, -Math.PI / 4, 0]}>
+        {/* Seat - rounded edges */}
+        <mesh position={[0, 0.9, 0]} geometry={createRoundedBoxGeometry(2.7, 0.6, 2.7, 0.1)}>
           <meshStandardMaterial color="#2d5a4a" roughness={0.6} />
         </mesh>
 
-        {/* Back */}
-        <mesh position={[0, 1.5, -1.05]}>
-          <boxGeometry args={[2.7, 2.4, 0.6]} />
+        {/* Back - rounded edges */}
+        <mesh position={[0, 1.5, -1.05]} geometry={createRoundedBoxGeometry(2.7, 2.4, 0.6, 0.1)}>
           <meshStandardMaterial color="#234537" roughness={0.6} />
         </mesh>
 
-        {/* Armrests */}
-        <mesh position={[-1.35, 0.9, 0]}>
-          <boxGeometry args={[0.3, 1.2, 2.7]} />
+        {/* Armrests - rounded edges */}
+        <mesh position={[-1.35, 0.9, 0]} geometry={createRoundedBoxGeometry(0.3, 1.2, 2.7, 0.08)}>
           <meshStandardMaterial color="#234537" roughness={0.7} />
         </mesh>
-        <mesh position={[1.35, 0.9, 0]}>
-          <boxGeometry args={[0.3, 1.2, 2.7]} />
+        <mesh position={[1.35, 0.9, 0]} geometry={createRoundedBoxGeometry(0.3, 1.2, 2.7, 0.08)}>
           <meshStandardMaterial color="#234537" roughness={0.7} />
         </mesh>
       </group>

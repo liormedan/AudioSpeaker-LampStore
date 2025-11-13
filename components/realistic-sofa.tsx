@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useState } from "react"
+import { useRef, useState, useMemo } from "react"
 import { useFrame } from "@react-three/fiber"
 import { Mesh } from "three"
 import * as THREE from "three"
@@ -82,6 +82,11 @@ function Cushion({
     }
   })
 
+  const roundedGeometry = useMemo(
+    () => createRoundedBoxGeometry(size[0], size[1], size[2], 0.1),
+    [size]
+  )
+
   return (
     <mesh
       ref={meshRef}
@@ -100,8 +105,8 @@ function Cushion({
       }}
       castShadow
       receiveShadow
+      geometry={roundedGeometry}
     >
-      <boxGeometry args={size} />
       <meshStandardMaterial
         color={color}
         roughness={0.7}
@@ -152,8 +157,7 @@ export function RealisticSofa({
       onPointerOut={() => handleHover(false)}
     >
       {/* Sofa Base - with rounded edges */}
-      <mesh position={[0, 0.6, 0]} castShadow receiveShadow>
-        <boxGeometry args={[10.5, 1.2, 3.2]} />
+      <mesh position={[0, 0.6, 0]} castShadow receiveShadow geometry={createRoundedBoxGeometry(10.5, 1.2, 3.2, 0.15)}>
         <meshStandardMaterial
           color={darkerColor.getHex()}
           roughness={0.8}
@@ -197,17 +201,15 @@ export function RealisticSofa({
         </group>
       ))}
 
-      {/* Armrests - integrated with base */}
-      <mesh position={[-5.25, 0.9, 0]} castShadow receiveShadow>
-        <boxGeometry args={[0.75, 1.8, 3.2]} />
+      {/* Armrests - integrated with base, rounded edges */}
+      <mesh position={[-5.25, 0.9, 0]} castShadow receiveShadow geometry={createRoundedBoxGeometry(0.75, 1.8, 3.2, 0.1)}>
         <meshStandardMaterial
           color={hovered ? `#${lighterColor.getHexString()}` : "#4a6b7f"}
           roughness={0.8}
           metalness={0.05}
         />
       </mesh>
-      <mesh position={[5.25, 0.9, 0]} castShadow receiveShadow>
-        <boxGeometry args={[0.75, 1.8, 3.2]} />
+      <mesh position={[5.25, 0.9, 0]} castShadow receiveShadow geometry={createRoundedBoxGeometry(0.75, 1.8, 3.2, 0.1)}>
         <meshStandardMaterial
           color={hovered ? `#${lighterColor.getHexString()}` : "#4a6b7f"}
           roughness={0.8}
@@ -235,17 +237,6 @@ export function RealisticSofa({
         </group>
       ))}
 
-      {/* Hover glow effect */}
-      {hovered && (
-        <mesh position={[0, 1.2, 0]}>
-          <boxGeometry args={[11, 3, 4]} />
-          <meshBasicMaterial
-            color={color}
-            transparent
-            opacity={0.1}
-          />
-        </mesh>
-      )}
     </group>
   )
 }

@@ -242,14 +242,6 @@ export function StoreShowroom({ onSelectLamp }: StoreShowroomProps) {
         </PhysicsWorld>
       </Canvas>
       
-      {/* Physics Toggle Button - outside Canvas */}
-      <button
-        onClick={() => setPhysicsEnabled(!physicsEnabled)}
-        className="fixed bottom-6 right-6 z-50 bg-black/40 backdrop-blur-md border border-white/10 rounded-lg px-4 py-2 text-white hover:bg-black/60 transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-transparent"
-        aria-label={physicsEnabled ? "Disable physics mode" : "Enable physics mode"}
-      >
-        {physicsEnabled ? "🔒 Lock Physics" : "⚡ Enable Physics"}
-      </button>
     </ErrorBoundary>
   )
 }
