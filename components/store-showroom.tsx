@@ -25,6 +25,12 @@ import type { Lamp } from "./store-scene"
 import type { Group } from "three"
 import { Color } from "three"
 
+// Audio Components
+import { AudioProvider } from "./audio/audio-manager"
+import { AudioUploader } from "./audio/audio-uploader"
+import { FrequencyVisualizer } from "./audio/frequency-visualizer"
+import { SpeakerModel } from "./models/speaker-model"
+
 type StoreShowroomProps = {
   onSelectLamp: (lamp: Lamp | null) => void
 }
@@ -101,117 +107,127 @@ export function StoreShowroom({ onSelectLamp }: StoreShowroomProps) {
 
   return (
     <ErrorBoundary>
-      <LoadingOverlay isLoading={isLoading} progress={loadingProgress} message="Loading textures and models..." />
-      {/* Preload models in background */}
-      {modelPaths.length > 0 && (
-        <ModelPreloader
-          modelPaths={modelPaths}
-          onComplete={() => {
-            console.log("All models preloaded")
-          }}
-        />
-      )}
-      <DimmerControl darkness={darkness} onDarknessChange={setDarkness} />
-      <Canvas
-        camera={{ position: [0, 8, 20], fov: 50 }}
-        style={{ background: environment.backgroundColor }}
-        shadows
-      >
-        {/* Performance monitoring */}
-        <PerformanceMonitor />
-
-        {/* Adaptive performance - adjusts DPR and event handling based on FPS */}
-        <AdaptiveDpr pixelated />
-        <AdaptiveEvents />
-
-        {/* Dynamic lighting that responds to darkness level - using separated component */}
-        <DynamicLighting config={{ darkness }} />
-
-        {/* Physics World - wraps scene with physics simulation */}
-        <PhysicsWorld>
-          {/* Showroom Environment (Walls, Floor, Beam) */}
-          <ShowroomEnvironment />
-
-          {/* Ceiling Pendant Lights */}
-          <CeilingPendant
-            position={[-8, 8, 2]}
-            type="minimalist"
-            onSelect={onSelectLamp}
-            darkness={darkness}
+      <AudioProvider>
+        <LoadingOverlay isLoading={isLoading} progress={loadingProgress} message="Loading textures and models..." />
+        {/* Preload models in background */}
+        {modelPaths.length > 0 && (
+          <ModelPreloader
+            modelPaths={modelPaths}
+            onComplete={() => {
+              console.log("All models preloaded")
+            }}
           />
+        )}
+        <DimmerControl darkness={darkness} onDarknessChange={setDarkness} />
+        <AudioUploader />
 
-          <CeilingPendant
-            position={[0, 8, 2]}
-            type="industrial"
-            onSelect={onSelectLamp}
-            darkness={darkness}
-          />
+        <Canvas
+          camera={{ position: [0, 8, 20], fov: 50 }}
+          style={{ background: environment.backgroundColor }}
+          shadows
+        >
+          {/* Performance monitoring */}
+          <PerformanceMonitor />
 
-          <CeilingPendant
-            position={[8, 8, 2]}
-            type="linear"
-            onSelect={onSelectLamp}
-            darkness={darkness}
-          />
+          {/* Adaptive performance - adjusts DPR and event handling based on FPS */}
+          <AdaptiveDpr pixelated />
+          <AdaptiveEvents />
 
-          <StoreFurniture onSelectLamp={onSelectLamp} />
+          {/* Dynamic lighting that responds to darkness level - using separated component */}
+          <DynamicLighting config={{ darkness }} />
 
-          {DISPLAY_LAMPS.map(({ lamp, position }) => {
-            // Use PhysicalLamp if physics is enabled, otherwise use regular display
-            if (physicsEnabled) {
+          {/* Physics World - wraps scene with physics simulation */}
+          <PhysicsWorld>
+            {/* Showroom Environment (Walls, Floor, Beam) */}
+            <ShowroomEnvironment />
+
+            {/* Ceiling Pendant Lights */}
+            <CeilingPendant
+              position={[-8, 8, 2]}
+              type="minimalist"
+              onSelect={onSelectLamp}
+              darkness={darkness}
+            />
+
+            <CeilingPendant
+              position={[0, 8, 2]}
+              type="industrial"
+              onSelect={onSelectLamp}
+              darkness={darkness}
+            />
+
+            <CeilingPendant
+              position={[8, 8, 2]}
+              type="linear"
+              onSelect={onSelectLamp}
+              darkness={darkness}
+            />
+
+            <StoreFurniture onSelectLamp={onSelectLamp} />
+
+            {/* Audio Speakers in Back Corners */}
+            <SpeakerModel position={[-13, 0, -8]} rotation={[0, Math.PI / 4, 0]} />
+            <SpeakerModel position={[13, 0, -8]} rotation={[0, -Math.PI / 4, 0]} />
+
+            {/* Frequency Visualizer */}
+            <FrequencyVisualizer position={[0, 5, -10]} />
+
+            {DISPLAY_LAMPS.map(({ lamp, position }) => {
+              // Use PhysicalLamp if physics is enabled, otherwise use regular display
+              if (physicsEnabled) {
+                return (
+                  <PhysicalLamp
+                    key={lamp.id}
+                    lamp={lamp}
+                    position={position}
+                    onClick={() => onSelectLamp(lamp)}
+                    interactive={true} // Allow physics interactions
+                  />
+                )
+              }
               return (
-                <PhysicalLamp
-                  key={lamp.id}
-                  lamp={lamp}
-                  position={position}
-                  onClick={() => onSelectLamp(lamp)}
-                  interactive={true} // Allow physics interactions
-                />
+                <AnimatedGroup key={lamp.id} position={position} hoverScale={1.08} floatIntensity={0.03}>
+                  <LampDisplayWithLOD lamp={lamp} position={[0, 0, 0]} onClick={() => onSelectLamp(lamp)} />
+                </AnimatedGroup>
               )
-            }
-            return (
-              <AnimatedGroup key={lamp.id} position={position} hoverScale={1.08} floatIntensity={0.03}>
-                <LampDisplayWithLOD lamp={lamp} position={[0, 0, 0]} onClick={() => onSelectLamp(lamp)} />
-              </AnimatedGroup>
-            )
-          })}
+            })}
 
-          <OrbitControls
-            enablePan={true}
-            enableZoom={true}
-            enableRotate={true}
-            minDistance={5}
-            maxDistance={35}
-            maxPolarAngle={Math.PI / 2}
-          />
-
-          {/* VR Toggle - only shows if VR is supported */}
-          <VRToggle />
-
-          {/* Environment controlled by dimmer - dims as darkness increases */}
-          <Environment
-            preset="city"
-            environmentIntensity={environment.environmentIntensity}
-          />
-
-          {/* Post-processing effects for realistic rendering */}
-          <EffectComposer enableNormalPass={true}>
-            <SSAO
-              samples={31}
-              radius={0.1}
-              intensity={30}
-              luminanceInfluence={0.6}
-              color={blackColor}
+            <OrbitControls
+              enablePan={true}
+              enableZoom={true}
+              enableRotate={true}
+              minDistance={5}
+              maxDistance={35}
+              maxPolarAngle={Math.PI / 2}
             />
-            <Bloom
-              intensity={0.5}
-              luminanceThreshold={0.9}
-              luminanceSmoothing={0.9}
-            />
-          </EffectComposer>
-        </PhysicsWorld>
-      </Canvas>
 
+            {/* VR Toggle - only shows if VR is supported */}
+            <VRToggle />
+
+            {/* Environment controlled by dimmer - dims as darkness increases */}
+            <Environment
+              preset="city"
+              environmentIntensity={environment.environmentIntensity}
+            />
+
+            {/* Post-processing effects for realistic rendering */}
+            <EffectComposer enableNormalPass={true}>
+              <SSAO
+                samples={31}
+                radius={0.1}
+                intensity={30}
+                luminanceInfluence={0.6}
+                color={blackColor}
+              />
+              <Bloom
+                intensity={0.5}
+                luminanceThreshold={0.9}
+                luminanceSmoothing={0.9}
+              />
+            </EffectComposer>
+          </PhysicsWorld>
+        </Canvas>
+      </AudioProvider>
     </ErrorBoundary>
   )
 }
