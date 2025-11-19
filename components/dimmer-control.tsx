@@ -10,11 +10,10 @@ type DimmerControlProps = {
   className?: string // Additional className
 }
 
-type TimePreset = "day" | "evening" | "night" | "custom"
+type TimePreset = "day" | "night" | "custom"
 
 const TIME_PRESETS: Record<TimePreset, number> = {
   day: 0.0, // Very bright (0 = maximum brightness)
-  evening: 0.4,
   night: 0.9,
   custom: -1, // Custom means use current darkness value
 }
@@ -118,10 +117,30 @@ export function DimmerControl({ darkness, onDarknessChange, position = "fixed", 
         aria-orientation="vertical"
         tabIndex={0}
       >
-        {/* Fill - Inverted (top is bright/empty, bottom is dark/full) */}
-        <div className="absolute bottom-3 left-0 right-0 flex justify-center pointer-events-none opacity-50">
+        {/* Fill - Light level (Top=Full/Bright, Bottom=Empty/Dark) */}
+        <div
+          className="absolute top-0 left-0 right-0 bg-gradient-to-b from-amber-300 to-amber-500 shadow-[0_0_15px_rgba(251,191,36,0.5)] transition-all duration-75 ease-out opacity-80"
+          style={{ height: `${(1 - darkness) * 100}%` }}
+        />
+
+        {/* Thumb/Indicator */}
+        <div
+          className="absolute left-1 right-1 h-1 bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)] rounded-full transition-all duration-75 ease-out pointer-events-none z-10"
+          style={{ top: `${darkness * 100}%`, transform: 'translateY(-50%)' }}
+        />
+
+        {/* Icons */}
+        <div className="absolute top-3 left-0 right-0 flex justify-center pointer-events-none z-20 mix-blend-difference">
+          <Sun size={14} className="text-white" />
+        </div>
+        <div className="absolute bottom-3 left-0 right-0 flex justify-center pointer-events-none opacity-50 z-20">
           <Moon size={14} className="text-indigo-200" />
         </div>
+      </div>
+
+      {/* Percentage Label */}
+      <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 bg-black/60 backdrop-blur-md text-white text-xs font-medium py-1 px-2 rounded border border-white/10 whitespace-nowrap pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+        {Math.round((1 - darkness) * 100)}% Light
       </div>
 
       {/* Time Presets - Only buttons, no slider */}
@@ -137,18 +156,6 @@ export function DimmerControl({ darkness, onDarknessChange, position = "fixed", 
           title="Day"
         >
           <Sun size={16} aria-hidden="true" />
-        </button>
-        <button
-          onClick={() => handlePresetClick("evening")}
-          className={`p-2 rounded transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-transparent ${activePreset === "evening"
-            ? "bg-amber-500 text-white"
-            : "bg-white/10 text-white/70 hover:bg-white/20"
-            }`}
-          aria-label="Set lighting to evening mode"
-          aria-pressed={activePreset === "evening"}
-          title="Evening"
-        >
-          <Moon size={16} aria-hidden="true" />
         </button>
         <button
           onClick={() => handlePresetClick("night")}

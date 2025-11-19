@@ -31,16 +31,17 @@ type DynamicLightingProps = {
 export function DynamicLighting({ config }: DynamicLightingProps) {
   const {
     darkness,
-    // Day mode (darkness=0): ambient=6.0, directional=12.0, spot=7.0
+    // Day mode (darkness=0): ambient=1.8, directional=3.5, spot=2.0 (Reduced by ~70%)
     // Night mode (darkness=1): ambient=0, directional=0, spot=0
-    ambientIntensity = { min: 0.0, max: 6.0 },
-    directionalIntensity = { min: 0.0, max: 12.0 },
-    spotIntensity = { min: 0.0, max: 7.0 },
+    ambientIntensity = { min: 0.0, max: 1.8 },
+    directionalIntensity = { min: 0.0, max: 3.5 },
+    spotIntensity = { min: 0.0, max: 2.0 },
   } = config
 
   // Soft shadows applied via SoftShadows component
   // Exponential curve for dramatic darkening
-  const darknessCurve = Math.pow(darkness, 6)
+  // Power of 2.5 gives a good balance - keeps it dark longer but allows smooth transition
+  const darknessCurve = Math.pow(darkness, 2.5)
 
   // Calculate intensities based on darkness curve
   const ambient = ambientIntensity.min + (ambientIntensity.max - ambientIntensity.min) * (1 - darknessCurve)
