@@ -31,9 +31,12 @@ type DynamicLightingProps = {
 export function DynamicLighting({ config }: DynamicLightingProps) {
   const {
     darkness,
-    ambientIntensity = { min: 0.005, max: 0.3 },
-    directionalIntensity = { min: 0.01, max: 0.8 },
-    spotIntensity = { min: 0.005, max: 0.4 },
+    // INCREASED VALUES FOR BRIGHTER LIGHTING:
+    // Day mode (darkness=0): ambient=6.0, directional=12.0, spot=7.0 (much brighter)
+    // Night mode (darkness=1): ambient=0.05, directional=0.1, spot=0.05 (much darker)
+    ambientIntensity = { min: 0.05, max: 6.0 },
+    directionalIntensity = { min: 0.1, max: 12.0 },
+    spotIntensity = { min: 0.05, max: 7.0 },
   } = config
 
   // Optimize shadow maps based on performance
@@ -43,11 +46,14 @@ export function DynamicLighting({ config }: DynamicLightingProps) {
   const darknessCurve = Math.pow(darkness, 1.8)
   
   // Calculate intensities based on darkness curve
+  // When darkness = 0 (bright), use max values. When darkness = 1 (dark), use min values
+  // Day mode (darkness=0): Uses max values for maximum brightness
+  // Night mode (darkness=1): Uses min values for darkness
   const ambient = ambientIntensity.min + (ambientIntensity.max - ambientIntensity.min) * (1 - darknessCurve)
   const directional = directionalIntensity.min + (directionalIntensity.max - directionalIntensity.min) * (1 - darknessCurve)
-  const directional2 = ambientIntensity.min + (0.3 - ambientIntensity.min) * (1 - darknessCurve)
+  const directional2 = ambientIntensity.min + (ambientIntensity.max * 0.5 - ambientIntensity.min) * (1 - darknessCurve)
   const spot = spotIntensity.min + (spotIntensity.max - spotIntensity.min) * (1 - darknessCurve)
-  const rim = ambientIntensity.min + (0.2 - ambientIntensity.min) * (1 - darknessCurve)
+  const rim = ambientIntensity.min + (ambientIntensity.max * 0.4 - ambientIntensity.min) * (1 - darknessCurve)
 
   return (
     <>

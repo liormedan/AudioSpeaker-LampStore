@@ -3,6 +3,7 @@
 import type { Lamp } from "./store-scene"
 import { useState } from "react"
 import { Lamp3DViewer } from "./lamp-3d-viewer"
+import { DimmerControl } from "./dimmer-control"
 
 type ProductDetailCardProps = {
   lamp: Lamp
@@ -12,6 +13,7 @@ type ProductDetailCardProps = {
 export function ProductDetailCard({ lamp, onClose }: ProductDetailCardProps) {
   const [selectedColor, setSelectedColor] = useState(lamp.colors[0])
   const [isFavorite, setIsFavorite] = useState(false)
+  const [darkness, setDarkness] = useState(0.0) // Start at 0% darkness (bright/day mode by default)
 
   return (
     <div 
@@ -48,7 +50,7 @@ export function ProductDetailCard({ lamp, onClose }: ProductDetailCardProps) {
         </div>
 
         {/* 3D Viewer */}
-        <Lamp3DViewer lamp={lamp} selectedColor={selectedColor} />
+        <Lamp3DViewer lamp={lamp} selectedColor={selectedColor} darkness={darkness} onDarknessChange={setDarkness} />
 
         {/* Description */}
         <p id="product-description" className="text-sm text-muted-foreground">{lamp.description}</p>

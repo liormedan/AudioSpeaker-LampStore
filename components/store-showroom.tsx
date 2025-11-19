@@ -9,6 +9,7 @@ import { LampDisplay } from "./lamp-display"
 import { DimmerControl } from "./dimmer-control"
 import { FloorPBRMaterial, WallPBRMaterial } from "./pbr-materials"
 import { DynamicLighting } from "./lighting/dynamic-lighting"
+import { IESLight } from "./lighting/ies-light"
 import { useStoreEnvironment } from "@/hooks/use-store-environment"
 import { ErrorBoundary } from "./error-boundary"
 import { LoadingOverlay } from "./loading-overlay"
@@ -32,7 +33,7 @@ const DISPLAY_LAMPS: Array<{ lamp: Lamp; position: [number, number, number] }> =
     lamp: {
       id: "1",
       name: "Modern Minimalist",
-      price: 1890,
+      price: 189,
       description: "Clean and elegant table lamp with cylindrical shade and dark metal base",
       type: "Table Lamp",
       colors: ["#ffffff", "#1a1a1a", "#2a2a2a"],
@@ -44,7 +45,7 @@ const DISPLAY_LAMPS: Array<{ lamp: Lamp; position: [number, number, number] }> =
     lamp: {
       id: "2",
       name: "Modern Arc",
-      price: 1950,
+      price: 195,
       description: "Contemporary arc floor lamp with marble base",
       type: "Floor Lamp",
       colors: ["#2a2a2a", "#b8860b", "#ffffff"],
@@ -183,6 +184,224 @@ export function StoreShowroom({ onSelectLamp }: StoreShowroomProps) {
       <Text position={[0, 6.8, -9.9]} fontSize={0.4} color="#c0c0c0" anchorX="center" anchorY="middle">
         Luxury Lighting Collection
       </Text>
+
+      {/* Wooden Beam for Ceiling Pendant Lights */}
+      <group position={[0, 9.5, 2]}>
+        {/* Main beam - wooden texture */}
+        <mesh castShadow receiveShadow>
+          <boxGeometry args={[18, 0.3, 0.4]} />
+          <meshStandardMaterial 
+            color="#8b6f47" 
+            roughness={0.9} 
+            metalness={0.1}
+          />
+        </mesh>
+        {/* Wood grain texture - subtle lines */}
+        <mesh position={[0, 0.16, 0]} receiveShadow>
+          <boxGeometry args={[18, 0.02, 0.4]} />
+          <meshStandardMaterial 
+            color="#6b5537" 
+            roughness={0.95} 
+            metalness={0.0}
+            transparent
+            opacity={0.3}
+          />
+        </mesh>
+        {/* Bottom edge detail */}
+        <mesh position={[0, -0.16, 0]} castShadow>
+          <boxGeometry args={[18, 0.02, 0.42]} />
+          <meshStandardMaterial 
+            color="#5a4a2f" 
+            roughness={0.8} 
+            metalness={0.2}
+          />
+        </mesh>
+      </group>
+
+      {/* Ceiling Pendant Lights */}
+      {/* 1. Modern Pendant Light - Minimalist Round */}
+      <group 
+        position={[-8, 8, 2]}
+        onClick={(e) => {
+          e.stopPropagation()
+          onSelectLamp({
+            id: "pendant-1",
+            name: "Modern Pendant Light",
+            price: 150,
+            description: "Minimalist round pendant light with clean design",
+            type: "Ceiling Lamp",
+            colors: ["#ffffff", "#1a1a1a", "#b8860b"],
+            features: ["Minimalist design", "Uniform lighting", "Modern aesthetic", "Easy installation"],
+          })
+        }}
+        onPointerOver={() => { document.body.style.cursor = "pointer" }}
+        onPointerOut={() => { document.body.style.cursor = "default" }}
+      >
+        {/* Ceiling mount - attached to wooden beam */}
+        <mesh position={[0, 1.5, 0]}>
+          <cylinderGeometry args={[0.08, 0.08, 0.3]} />
+          <meshStandardMaterial color="#1a1a1a" metalness={0.8} roughness={0.2} />
+        </mesh>
+        {/* Cord/chain */}
+        <mesh position={[0, 0.8, 0]}>
+          <cylinderGeometry args={[0.02, 0.02, 1.5]} />
+          <meshStandardMaterial color="#2a2a2a" metalness={0.6} roughness={0.3} />
+        </mesh>
+        {/* Pendant sphere - white glass/metal */}
+        <mesh position={[0, 0.3, 0]}>
+          <sphereGeometry args={[0.4, 32, 32]} />
+          <meshStandardMaterial 
+            color="#ffffff" 
+            roughness={0.2} 
+            metalness={0.1}
+            transparent
+            opacity={0.9}
+          />
+        </mesh>
+        {/* Inner glow */}
+        <mesh position={[0, 0.3, 0]}>
+          <sphereGeometry args={[0.35, 32, 32]} />
+          <meshStandardMaterial 
+            color="#fffacd" 
+            emissive="#fff5e1" 
+            emissiveIntensity={1.2}
+          />
+        </mesh>
+        {/* Light source */}
+        <IESLight
+          position={[0, 0.3, 0]}
+          intensity={25}
+          distance={8}
+          color="#fff5e1"
+          profile="table"
+        />
+      </group>
+
+      {/* 2. Industrial Cage Pendant */}
+      <group 
+        position={[0, 8, 2]}
+        onClick={(e) => {
+          e.stopPropagation()
+          onSelectLamp({
+            id: "pendant-2",
+            name: "Industrial Cage Pendant",
+            price: 180,
+            description: "Industrial style pendant with metal cage design",
+            type: "Ceiling Lamp",
+            colors: ["#1a1a1a", "#8b7355", "#b8860b"],
+            features: ["Industrial design", "Focused lighting", "Metal construction", "Vintage aesthetic"],
+          })
+        }}
+        onPointerOver={() => { document.body.style.cursor = "pointer" }}
+        onPointerOut={() => { document.body.style.cursor = "default" }}
+      >
+        {/* Ceiling mount - attached to wooden beam */}
+        <mesh position={[0, 1.5, 0]}>
+          <cylinderGeometry args={[0.1, 0.1, 0.3]} />
+          <meshStandardMaterial color="#1a1a1a" metalness={0.9} roughness={0.1} />
+        </mesh>
+        {/* Cord */}
+        <mesh position={[0, 0.8, 0]}>
+          <cylinderGeometry args={[0.025, 0.025, 1.5]} />
+          <meshStandardMaterial color="#2a2a2a" metalness={0.7} roughness={0.2} />
+        </mesh>
+        {/* Cage structure - vertical bars */}
+        {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
+          <mesh key={i} position={[0, 0.3, 0]} rotation={[0, (i * Math.PI) / 4, 0]}>
+            <boxGeometry args={[0.02, 0.6, 0.02]} />
+            <meshStandardMaterial color="#1a1a1a" metalness={0.8} roughness={0.2} />
+          </mesh>
+        ))}
+        {/* Cage top ring */}
+        <mesh position={[0, 0.6, 0]}>
+          <torusGeometry args={[0.35, 0.02, 16, 32]} />
+          <meshStandardMaterial color="#1a1a1a" metalness={0.8} roughness={0.2} />
+        </mesh>
+        {/* Cage bottom ring */}
+        <mesh position={[0, 0, 0]}>
+          <torusGeometry args={[0.35, 0.02, 16, 32]} />
+          <meshStandardMaterial color="#1a1a1a" metalness={0.8} roughness={0.2} />
+        </mesh>
+        {/* Inner bulb */}
+        <mesh position={[0, 0.3, 0]}>
+          <sphereGeometry args={[0.25, 16, 16]} />
+          <meshStandardMaterial 
+            color="#fffacd" 
+            emissive="#fff5e1" 
+            emissiveIntensity={1.5}
+          />
+        </mesh>
+        {/* Light source */}
+        <IESLight
+          position={[0, 0.3, 0]}
+          intensity={30}
+          distance={10}
+          color="#fff5e1"
+          profile="table"
+        />
+      </group>
+
+      {/* 3. Multi-Light Linear Pendant */}
+      <group 
+        position={[8, 8, 2]}
+        onClick={(e) => {
+          e.stopPropagation()
+          onSelectLamp({
+            id: "pendant-3",
+            name: "Multi-Light Linear Pendant",
+            price: 240,
+            description: "Linear pendant with multiple lights for wide area coverage",
+            type: "Ceiling Lamp",
+            colors: ["#1a1a1a", "#b8860b", "#ffffff"],
+            features: ["Multiple lights", "Wide coverage", "Linear design", "Modern style"],
+          })
+        }}
+        onPointerOver={() => { document.body.style.cursor = "pointer" }}
+        onPointerOut={() => { document.body.style.cursor = "default" }}
+      >
+        {/* Ceiling mount - attached to wooden beam */}
+        <mesh position={[0, 1.5, 0]}>
+          <boxGeometry args={[1.2, 0.1, 0.1]} />
+          <meshStandardMaterial color="#1a1a1a" metalness={0.8} roughness={0.2} />
+        </mesh>
+        {/* Cords - 3 lights */}
+        {[-0.4, 0, 0.4].map((x, i) => (
+          <group key={i}>
+            <mesh position={[x, 0.8, 0]}>
+              <cylinderGeometry args={[0.02, 0.02, 1.5]} />
+              <meshStandardMaterial color="#2a2a2a" metalness={0.6} roughness={0.3} />
+            </mesh>
+            {/* Pendant sphere */}
+            <mesh position={[x, 0.3, 0]}>
+              <sphereGeometry args={[0.25, 32, 32]} />
+              <meshStandardMaterial 
+                color="#ffffff" 
+                roughness={0.2} 
+                metalness={0.1}
+                transparent
+                opacity={0.85}
+              />
+            </mesh>
+            {/* Inner glow */}
+            <mesh position={[x, 0.3, 0]}>
+              <sphereGeometry args={[0.22, 32, 32]} />
+              <meshStandardMaterial 
+                color="#fffacd" 
+                emissive="#fff5e1" 
+                emissiveIntensity={1.0}
+              />
+            </mesh>
+            {/* Light source */}
+            <IESLight
+              position={[x, 0.3, 0]}
+              intensity={20}
+              distance={8}
+              color="#fff5e1"
+              profile="table"
+            />
+          </group>
+        ))}
+      </group>
 
       <StoreFurniture onSelectLamp={onSelectLamp} />
 

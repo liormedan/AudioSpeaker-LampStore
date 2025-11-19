@@ -43,7 +43,7 @@ export function StoreFurniture({ onSelectLamp }: StoreFurnitureProps) {
   const leftLamp: Lamp = {
     id: "3",
     name: "Classic Drum",
-    price: 1650,
+    price: 165,
     description: "Elegant floor lamp with drum shade and brass accents",
     type: "Floor Lamp",
     colors: ["#f5f5dc", "#1a1a1a", "#b8860b"],
@@ -53,7 +53,7 @@ export function StoreFurniture({ onSelectLamp }: StoreFurnitureProps) {
   const rightLamp: Lamp = {
     id: "4",
     name: "Arc Floor Light",
-    price: 2250,
+    price: 225,
     description: "Modern arc floor lamp with adjustable arm and marble base",
     type: "Floor Lamp",
     colors: ["#2a2a2a", "#b8860b", "#ffffff"],
@@ -102,7 +102,7 @@ export function StoreFurniture({ onSelectLamp }: StoreFurnitureProps) {
             onSelectLamp({
               id: "table-lamp-1",
               name: "Elegant Brass Table Lamp",
-              price: 1650,
+              price: 165,
               description: "Classic table lamp with brass base and fabric shade",
               type: "Table Lamp",
               colors: ["#d4af37", "#2a2a2a", "#f5f5dc"],

@@ -6,18 +6,20 @@ import { Sun, Moon } from "lucide-react"
 type DimmerControlProps = {
   darkness: number // 0 = bright, 1 = dark
   onDarknessChange: (darkness: number) => void
+  position?: "fixed" | "relative" | "absolute" // Positioning type
+  className?: string // Additional className
 }
 
 type TimePreset = "day" | "evening" | "night" | "custom"
 
 const TIME_PRESETS: Record<TimePreset, number> = {
-  day: 0.1,
+  day: 0.0, // Very bright (0 = maximum brightness)
   evening: 0.4,
   night: 0.9,
   custom: -1, // Custom means use current darkness value
 }
 
-export function DimmerControl({ darkness, onDarknessChange }: DimmerControlProps) {
+export function DimmerControl({ darkness, onDarknessChange, position = "fixed", className = "" }: DimmerControlProps) {
   const [isDragging, setIsDragging] = useState(false)
   const [activePreset, setActivePreset] = useState<TimePreset>("custom")
   const sliderRef = useRef<HTMLDivElement>(null)
@@ -94,13 +96,15 @@ export function DimmerControl({ darkness, onDarknessChange }: DimmerControlProps
 
   const percentage = Math.round(darkness * 100)
 
+  const positionClass = position === "fixed" ? "fixed right-6 top-1/2 -translate-y-1/2 z-50" : position === "absolute" ? "absolute right-2 top-1/2 -translate-y-1/2 z-10" : "relative"
+  
   return (
     <div 
-      className="fixed right-6 top-1/2 -translate-y-1/2 z-50 flex flex-col items-center gap-3"
+      className={`${positionClass} flex flex-col items-center gap-2 ${className}`}
       role="group"
       aria-label="Lighting control"
     >
-      {/* Time Presets */}
+      {/* Time Presets - Only buttons, no slider */}
       <div className="flex flex-col gap-2 bg-black/40 backdrop-blur-md rounded-lg p-2 border border-white/10" role="group" aria-label="Time presets">
         <button
           onClick={() => handlePresetClick("day")}
@@ -141,99 +145,6 @@ export function DimmerControl({ darkness, onDarknessChange }: DimmerControlProps
         >
           <Moon size={16} className="fill-current" aria-hidden="true" />
         </button>
-      </div>
-
-      {/* Label */}
-      <div 
-        className="text-white text-sm font-medium opacity-80 bg-black/40 backdrop-blur-md rounded px-2 py-1 border border-white/10"
-        aria-live="polite"
-        aria-atomic="true"
-      >
-        <span aria-label={`Lighting level: ${percentage} percent`}>{percentage}%</span>
-      </div>
-
-      {/* Slider Track */}
-      <div
-        ref={sliderRef}
-        className="relative w-12 h-64 bg-gray-800 rounded-full border-2 border-gray-700 cursor-pointer shadow-lg select-none focus-within:ring-2 focus-within:ring-amber-400 focus-within:ring-offset-2 focus-within:ring-offset-transparent"
-        onMouseDown={handleMouseDown}
-        onClick={handleClick}
-        role="slider"
-        aria-label="Adjust lighting brightness"
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-valuenow={percentage}
-        tabIndex={0}
-        onKeyDown={(e) => {
-          let newValue = darkness
-          if (e.key === "ArrowUp" || e.key === "ArrowRight") {
-            newValue = Math.min(1, darkness + 0.05)
-            onDarknessChange(newValue)
-          } else if (e.key === "ArrowDown" || e.key === "ArrowLeft") {
-            newValue = Math.max(0, darkness - 0.05)
-            onDarknessChange(newValue)
-          } else if (e.key === "Home") {
-            onDarknessChange(0)
-          } else if (e.key === "End") {
-            onDarknessChange(1)
-          }
-        }}
-      >
-        {/* Active Track (darkness indicator) - fills from top when dark */}
-        <div
-          className="absolute top-0 left-0 right-0 bg-gradient-to-b from-yellow-200 via-yellow-300 to-yellow-400 rounded-full transition-all duration-200"
-          style={{ height: `${darkness * 100}%` }}
-        />
-
-        {/* Slider Handle */}
-        <div
-          className="absolute left-1/2 -translate-x-1/2 w-10 h-10 bg-white rounded-full border-2 border-gray-400 shadow-lg cursor-grab active:cursor-grabbing transition-transform hover:scale-110"
-          style={{
-            top: `calc(${darkness * 100}% - 20px)`,
-          }}
-        >
-          {/* Inner circle */}
-          <div className="absolute inset-2 bg-gradient-to-br from-gray-200 to-gray-400 rounded-full" />
-        </div>
-
-        {/* Tick marks */}
-        {[0, 0.25, 0.5, 0.75, 1].map((value) => (
-          <div
-            key={value}
-            className="absolute left-0 w-full h-0.5 bg-gray-600 opacity-50"
-            style={{ bottom: `${value * 100}%` }}
-          />
-        ))}
-      </div>
-
-      {/* Icons */}
-      <div className="flex flex-col items-center gap-1 text-white opacity-60 text-xs">
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-        >
-          <circle cx="12" cy="12" r="5" />
-          <line x1="12" y1="1" x2="12" y2="3" />
-          <line x1="12" y1="21" x2="12" y2="23" />
-          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-          <line x1="1" y1="12" x2="3" y2="12" />
-          <line x1="21" y1="12" x2="23" y2="12" />
-          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-        </svg>
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="currentColor"
-        >
-          <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" />
-        </svg>
       </div>
     </div>
   )

@@ -1,14 +1,18 @@
 "use client"
 
 import { Canvas } from "@react-three/fiber"
-import { OrbitControls, Environment } from "@react-three/drei"
+import { OrbitControls, Environment, Html } from "@react-three/drei"
 import { RectAreaLightComponent } from "./lighting/rect-area-light"
 import { IESLight } from "./lighting/ies-light"
+import { DynamicLighting } from "./lighting/dynamic-lighting"
+import { DimmerControl } from "./dimmer-control"
 import type { Lamp } from "./store-scene"
 
 type Lamp3DViewerProps = {
   lamp: Lamp
   selectedColor: string
+  darkness?: number // 0 = bright, 1 = dark
+  onDarknessChange?: (darkness: number) => void
 }
 
 function LampModel({ lamp, selectedColor }: { lamp: Lamp; selectedColor: string }) {
@@ -311,6 +315,154 @@ function LampModel({ lamp, selectedColor }: { lamp: Lamp; selectedColor: string 
     )
   }
 
+  // Modern Pendant Light (id: pendant-1)
+  if (lamp.id === "pendant-1") {
+    return (
+      <group scale={0.6} position={[0, 2.5, 0]}>
+        {/* Ceiling mount */}
+        <mesh position={[0, 1.5, 0]}>
+          <cylinderGeometry args={[0.08, 0.08, 0.3]} />
+          <meshStandardMaterial color="#1a1a1a" metalness={0.8} roughness={0.2} />
+        </mesh>
+        {/* Cord/chain */}
+        <mesh position={[0, 0.8, 0]}>
+          <cylinderGeometry args={[0.02, 0.02, 1.5]} />
+          <meshStandardMaterial color="#2a2a2a" metalness={0.6} roughness={0.3} />
+        </mesh>
+        {/* Pendant sphere - white glass/metal */}
+        <mesh position={[0, 0.3, 0]}>
+          <sphereGeometry args={[0.4, 32, 32]} />
+          <meshStandardMaterial 
+            color={selectedColor === "#ffffff" ? "#ffffff" : selectedColor}
+            roughness={0.2} 
+            metalness={0.1}
+            transparent
+            opacity={0.9}
+          />
+        </mesh>
+        {/* Inner glow */}
+        <mesh position={[0, 0.3, 0]}>
+          <sphereGeometry args={[0.35, 32, 32]} />
+          <meshStandardMaterial 
+            color="#fffacd" 
+            emissive="#fff5e1" 
+            emissiveIntensity={1.2}
+          />
+        </mesh>
+        {/* Light source */}
+        <IESLight
+          position={[0, 0.3, 0]}
+          intensity={25}
+          distance={8}
+          color="#fff5e1"
+          profile="table"
+        />
+      </group>
+    )
+  }
+
+  // Industrial Cage Pendant (id: pendant-2)
+  if (lamp.id === "pendant-2") {
+    return (
+      <group scale={0.6} position={[0, 2.5, 0]}>
+        {/* Ceiling mount */}
+        <mesh position={[0, 1.5, 0]}>
+          <cylinderGeometry args={[0.1, 0.1, 0.3]} />
+          <meshStandardMaterial color="#1a1a1a" metalness={0.9} roughness={0.1} />
+        </mesh>
+        {/* Cord */}
+        <mesh position={[0, 0.8, 0]}>
+          <cylinderGeometry args={[0.025, 0.025, 1.5]} />
+          <meshStandardMaterial color="#2a2a2a" metalness={0.7} roughness={0.2} />
+        </mesh>
+        {/* Cage structure - vertical bars */}
+        {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
+          <mesh key={i} position={[0, 0.3, 0]} rotation={[0, (i * Math.PI) / 4, 0]}>
+            <boxGeometry args={[0.02, 0.6, 0.02]} />
+            <meshStandardMaterial color={selectedColor === "#1a1a1a" ? "#1a1a1a" : selectedColor} metalness={0.8} roughness={0.2} />
+          </mesh>
+        ))}
+        {/* Cage top ring */}
+        <mesh position={[0, 0.6, 0]}>
+          <torusGeometry args={[0.35, 0.02, 16, 32]} />
+          <meshStandardMaterial color={selectedColor === "#1a1a1a" ? "#1a1a1a" : selectedColor} metalness={0.8} roughness={0.2} />
+        </mesh>
+        {/* Cage bottom ring */}
+        <mesh position={[0, 0, 0]}>
+          <torusGeometry args={[0.35, 0.02, 16, 32]} />
+          <meshStandardMaterial color={selectedColor === "#1a1a1a" ? "#1a1a1a" : selectedColor} metalness={0.8} roughness={0.2} />
+        </mesh>
+        {/* Inner bulb */}
+        <mesh position={[0, 0.3, 0]}>
+          <sphereGeometry args={[0.25, 16, 16]} />
+          <meshStandardMaterial 
+            color="#fffacd" 
+            emissive="#fff5e1" 
+            emissiveIntensity={1.5}
+          />
+        </mesh>
+        {/* Light source */}
+        <IESLight
+          position={[0, 0.3, 0]}
+          intensity={30}
+          distance={10}
+          color="#fff5e1"
+          profile="table"
+        />
+      </group>
+    )
+  }
+
+  // Multi-Light Linear Pendant (id: pendant-3)
+  if (lamp.id === "pendant-3") {
+    return (
+      <group scale={0.6} position={[0, 2.5, 0]}>
+        {/* Ceiling mount */}
+        <mesh position={[0, 1.5, 0]}>
+          <boxGeometry args={[1.2, 0.1, 0.1]} />
+          <meshStandardMaterial color={selectedColor === "#1a1a1a" ? "#1a1a1a" : selectedColor} metalness={0.8} roughness={0.2} />
+        </mesh>
+        {/* Cords - 3 lights */}
+        {[-0.4, 0, 0.4].map((x, i) => (
+          <group key={i}>
+            <mesh position={[x, 0.8, 0]}>
+              <cylinderGeometry args={[0.02, 0.02, 1.5]} />
+              <meshStandardMaterial color="#2a2a2a" metalness={0.6} roughness={0.3} />
+            </mesh>
+            {/* Pendant sphere */}
+            <mesh position={[x, 0.3, 0]}>
+              <sphereGeometry args={[0.25, 32, 32]} />
+              <meshStandardMaterial 
+                color={selectedColor === "#ffffff" ? "#ffffff" : selectedColor}
+                roughness={0.2} 
+                metalness={0.1}
+                transparent
+                opacity={0.85}
+              />
+            </mesh>
+            {/* Inner glow */}
+            <mesh position={[x, 0.3, 0]}>
+              <sphereGeometry args={[0.22, 32, 32]} />
+              <meshStandardMaterial 
+                color="#fffacd" 
+                emissive="#fff5e1" 
+                emissiveIntensity={1.0}
+              />
+            </mesh>
+            {/* Light source */}
+            <IESLight
+              position={[x, 0.3, 0]}
+              intensity={20}
+              distance={8}
+              color="#fff5e1"
+              profile="table"
+            />
+          </group>
+        ))}
+      </group>
+    )
+  }
+
   // Default fallback
   return (
     <group scale={0.8} position={[0, 0.2, 0]}>
@@ -354,26 +506,31 @@ function LampModel({ lamp, selectedColor }: { lamp: Lamp; selectedColor: string 
   )
 }
 
-export function Lamp3DViewer({ lamp, selectedColor }: Lamp3DViewerProps) {
-  // Adjust height and camera for floor lamps
-  const isFloorLamp = lamp.id === "2" || lamp.id === "3" || lamp.id === "4"
-  const viewerHeight = isFloorLamp ? "h-64" : "h-48"
-  // Move camera further back and adjust angle
-  const cameraY = isFloorLamp ? 3 : 2
-  const cameraZ = isFloorLamp ? 10 : 7
+export function Lamp3DViewer({ lamp, selectedColor, darkness = 0.9, onDarknessChange }: Lamp3DViewerProps) {
+  // Adjust height and camera for floor lamps and ceiling lamps
+  const isFloorLamp = lamp.type === "Floor Lamp"
+  const isCeilingLamp = lamp.type === "Ceiling Lamp"
+  const cameraY = isFloorLamp ? 4 : isCeilingLamp ? 3 : 2
+  const cameraZ = isFloorLamp ? 8 : isCeilingLamp ? 7 : 6
+  const viewerHeight = isFloorLamp ? "h-[500px]" : isCeilingLamp ? "h-[450px]" : "h-[400px]"
+
+  // Calculate background color based on darkness
+  // Day mode (darkness=0): bright gray background (200, 200, 200)
+  // Night mode (darkness=1): dark background (10, 10, 10)
+  const darknessCurve = Math.pow(darkness, 1.8)
+  const bgBrightness = 10 + (200 - 10) * (1 - darknessCurve) // Range from 10 (dark) to 200 (bright)
+  const backgroundColor = `rgb(${Math.round(bgBrightness)}, ${Math.round(bgBrightness)}, ${Math.round(bgBrightness)})`
 
   return (
     <div 
-      className={`w-full ${viewerHeight} rounded-lg overflow-hidden bg-black border border-border relative`}
+      className={`w-full ${viewerHeight} rounded-lg overflow-hidden border border-border relative`}
+      style={{ backgroundColor }}
       role="img"
       aria-label={`3D interactive viewer for ${lamp.name} lamp. Use mouse or touch to rotate and zoom.`}
     >
-      <Canvas camera={{ position: [0, cameraY, cameraZ], fov: 45 }}>
-        {/* Dark ambient - very low */}
-        <ambientLight intensity={0.1} />
-        {/* Very dim directional light */}
-        <directionalLight position={[5, 5, 5]} intensity={0.2} />
-        {/* Remove bright spot light */}
+      <Canvas camera={{ position: [0, cameraY, cameraZ], fov: 45 }} shadows>
+        {/* Dynamic lighting that responds to darkness level */}
+        <DynamicLighting config={{ darkness }} />
         
         {/* Ground plane - very dark base */}
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
@@ -397,9 +554,16 @@ export function Lamp3DViewer({ lamp, selectedColor }: Lamp3DViewerProps) {
           maxDistance={isFloorLamp ? 14 : 10}
           autoRotate={false}
         />
-        
-        {/* No environment - pure darkness */}
       </Canvas>
+      
+      {/* Dimmer Control - positioned in corner of viewer, not in 3D space */}
+      {onDarknessChange && (
+        <div className="absolute right-2 top-2 z-10 pointer-events-auto">
+          <div className="scale-75 origin-top-right">
+            <DimmerControl darkness={darkness} onDarknessChange={onDarknessChange} position="relative" />
+          </div>
+        </div>
+      )}
     </div>
   )
 }
