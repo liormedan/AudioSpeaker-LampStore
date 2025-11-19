@@ -97,22 +97,41 @@ export function DimmerControl({ darkness, onDarknessChange, position = "fixed", 
   const percentage = Math.round(darkness * 100)
 
   const positionClass = position === "fixed" ? "fixed right-6 top-1/2 -translate-y-1/2 z-50" : position === "absolute" ? "absolute right-2 top-1/2 -translate-y-1/2 z-10" : "relative"
-  
+
   return (
-    <div 
+    <div
       className={`${positionClass} flex flex-col items-center gap-2 ${className}`}
       role="group"
       aria-label="Lighting control"
     >
+      {/* Slider Control */}
+      <div
+        className="relative h-48 w-8 bg-black/40 backdrop-blur-md rounded-full border border-white/10 overflow-hidden cursor-pointer touch-none"
+        ref={sliderRef}
+        onMouseDown={handleMouseDown}
+        onClick={handleClick}
+        role="slider"
+        aria-label="Light dimmer"
+        aria-valuenow={percentage}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-orientation="vertical"
+        tabIndex={0}
+      >
+        {/* Fill - Inverted (top is bright/empty, bottom is dark/full) */}
+        <div className="absolute bottom-3 left-0 right-0 flex justify-center pointer-events-none opacity-50">
+          <Moon size={14} className="text-indigo-200" />
+        </div>
+      </div>
+
       {/* Time Presets - Only buttons, no slider */}
       <div className="flex flex-col gap-2 bg-black/40 backdrop-blur-md rounded-lg p-2 border border-white/10" role="group" aria-label="Time presets">
         <button
           onClick={() => handlePresetClick("day")}
-          className={`p-2 rounded transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-transparent ${
-            activePreset === "day"
-              ? "bg-amber-500 text-white"
-              : "bg-white/10 text-white/70 hover:bg-white/20"
-          }`}
+          className={`p-2 rounded transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-transparent ${activePreset === "day"
+            ? "bg-amber-500 text-white"
+            : "bg-white/10 text-white/70 hover:bg-white/20"
+            }`}
           aria-label="Set lighting to day mode"
           aria-pressed={activePreset === "day"}
           title="Day"
@@ -121,11 +140,10 @@ export function DimmerControl({ darkness, onDarknessChange, position = "fixed", 
         </button>
         <button
           onClick={() => handlePresetClick("evening")}
-          className={`p-2 rounded transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-transparent ${
-            activePreset === "evening"
-              ? "bg-amber-500 text-white"
-              : "bg-white/10 text-white/70 hover:bg-white/20"
-          }`}
+          className={`p-2 rounded transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-transparent ${activePreset === "evening"
+            ? "bg-amber-500 text-white"
+            : "bg-white/10 text-white/70 hover:bg-white/20"
+            }`}
           aria-label="Set lighting to evening mode"
           aria-pressed={activePreset === "evening"}
           title="Evening"
@@ -134,11 +152,10 @@ export function DimmerControl({ darkness, onDarknessChange, position = "fixed", 
         </button>
         <button
           onClick={() => handlePresetClick("night")}
-          className={`p-2 rounded transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-transparent ${
-            activePreset === "night"
-              ? "bg-amber-500 text-white"
-              : "bg-white/10 text-white/70 hover:bg-white/20"
-          }`}
+          className={`p-2 rounded transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-transparent ${activePreset === "night"
+            ? "bg-amber-500 text-white"
+            : "bg-white/10 text-white/70 hover:bg-white/20"
+            }`}
           aria-label="Set lighting to night mode"
           aria-pressed={activePreset === "night"}
           title="Night"

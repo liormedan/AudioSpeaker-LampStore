@@ -2,6 +2,7 @@
 
 import { RepeatWrapping, Texture, TextureLoader } from "three"
 import { useMemo, useEffect, useState } from "react"
+import { useTexture } from "@react-three/drei"
 
 // Export loading state type for use in components
 export type TextureLoadingState = {
@@ -27,17 +28,17 @@ function createProceduralTexture(color: string, size: number = 256): Texture {
   canvas.width = size
   canvas.height = size
   const ctx = canvas.getContext("2d")!
-  
+
   // Parse color hex to RGB
   const hex = color.replace("#", "")
   const r = parseInt(hex.substring(0, 2), 16)
   const g = parseInt(hex.substring(2, 4), 16)
   const b = parseInt(hex.substring(4, 6), 16)
-  
+
   // Create a simple pattern
   ctx.fillStyle = color
   ctx.fillRect(0, 0, size, size)
-  
+
   // Add some noise for texture
   const imageData = ctx.getImageData(0, 0, size, size)
   const data = imageData.data
@@ -48,7 +49,7 @@ function createProceduralTexture(color: string, size: number = 256): Texture {
     data[i + 2] = Math.max(0, Math.min(255, b + noise)) // B
   }
   ctx.putImageData(imageData, 0, 0)
-  
+
   const texture = new Texture(canvas)
   texture.needsUpdate = true
   return texture
@@ -87,11 +88,11 @@ function useTextureWithFallback(paths: string[], fallbackColor: string) {
 }
 
 // PBR Material component for floor
-export function FloorPBRMaterial({ 
-  color = "#4a3728", 
-  roughness = 0.8, 
+export function FloorPBRMaterial({
+  color = "#4a3728",
+  roughness = 0.8,
   repeat = [6, 6],
-  ...props 
+  ...props
 }: PBRMaterialProps) {
   // Try to load textures using useTexture from drei (will use fallback if not found)
   const texturePaths = useMemo(() => [
@@ -103,17 +104,18 @@ export function FloorPBRMaterial({
 
   // Use useTexture - it will handle errors gracefully
   // We'll use a simpler approach with conditional loading
+  // Initialize with procedural texture to avoid pop-in
   const [textures, setTextures] = useState<{
     map: Texture | null
     normalMap: Texture | null
     roughnessMap: Texture | null
     aoMap: Texture | null
-  }>({
-    map: null,
+  }>(() => ({
+    map: createProceduralTexture(color, 512),
     normalMap: null,
     roughnessMap: null,
     aoMap: null,
-  })
+  }))
 
   useEffect(() => {
     const loader = new TextureLoader()
@@ -145,19 +147,19 @@ export function FloorPBRMaterial({
       textures.map.repeat.set(repeat[0], repeat[1])
       textures.map.anisotropy = 16
     }
-    
+
     if (textures.normalMap) {
       textures.normalMap.wrapS = RepeatWrapping
       textures.normalMap.wrapT = RepeatWrapping
       textures.normalMap.repeat.set(repeat[0], repeat[1])
     }
-    
+
     if (textures.roughnessMap) {
       textures.roughnessMap.wrapS = RepeatWrapping
       textures.roughnessMap.wrapT = RepeatWrapping
       textures.roughnessMap.repeat.set(repeat[0], repeat[1])
     }
-    
+
     if (textures.aoMap) {
       textures.aoMap.wrapS = RepeatWrapping
       textures.aoMap.wrapT = RepeatWrapping
@@ -185,11 +187,11 @@ export function FloorPBRMaterial({
 }
 
 // PBR Material component for walls
-export function WallPBRMaterial({ 
-  color = "#2a3439", 
-  roughness = 0.9, 
+export function WallPBRMaterial({
+  color = "#2a3439",
+  roughness = 0.9,
   repeat = [1, 1],
-  ...props 
+  ...props
 }: PBRMaterialProps) {
   const texturePaths = useMemo(() => [
     "/textures/wall/color.jpg",
@@ -203,12 +205,12 @@ export function WallPBRMaterial({
     normalMap: Texture | null
     roughnessMap: Texture | null
     aoMap: Texture | null
-  }>({
-    map: null,
+  }>(() => ({
+    map: createProceduralTexture(color, 512),
     normalMap: null,
     roughnessMap: null,
     aoMap: null,
-  })
+  }))
 
   useEffect(() => {
     const loader = new TextureLoader()
@@ -237,19 +239,19 @@ export function WallPBRMaterial({
       textures.map.wrapT = RepeatWrapping
       textures.map.repeat.set(repeat[0], repeat[1])
     }
-    
+
     if (textures.normalMap) {
       textures.normalMap.wrapS = RepeatWrapping
       textures.normalMap.wrapT = RepeatWrapping
       textures.normalMap.repeat.set(repeat[0], repeat[1])
     }
-    
+
     if (textures.roughnessMap) {
       textures.roughnessMap.wrapS = RepeatWrapping
       textures.roughnessMap.wrapT = RepeatWrapping
       textures.roughnessMap.repeat.set(repeat[0], repeat[1])
     }
-    
+
     if (textures.aoMap) {
       textures.aoMap.wrapS = RepeatWrapping
       textures.aoMap.wrapT = RepeatWrapping
@@ -276,12 +278,12 @@ export function WallPBRMaterial({
 }
 
 // PBR Material component for marble/stone (coffee table)
-export function MarblePBRMaterial({ 
-  color = "#d4c5b0", 
-  roughness = 0.2, 
+export function MarblePBRMaterial({
+  color = "#d4c5b0",
+  roughness = 0.2,
   metalness = 0.3,
   repeat = [1, 1],
-  ...props 
+  ...props
 }: PBRMaterialProps) {
   const texturePaths = useMemo(() => [
     "/textures/marble/color.jpg",
@@ -330,19 +332,19 @@ export function MarblePBRMaterial({
       textures.map.repeat.set(repeat[0], repeat[1])
       textures.map.anisotropy = 16
     }
-    
+
     if (textures.normalMap) {
       textures.normalMap.wrapS = RepeatWrapping
       textures.normalMap.wrapT = RepeatWrapping
       textures.normalMap.repeat.set(repeat[0], repeat[1])
     }
-    
+
     if (textures.roughnessMap) {
       textures.roughnessMap.wrapS = RepeatWrapping
       textures.roughnessMap.wrapT = RepeatWrapping
       textures.roughnessMap.repeat.set(repeat[0], repeat[1])
     }
-    
+
     if (textures.aoMap) {
       textures.aoMap.wrapS = RepeatWrapping
       textures.aoMap.wrapT = RepeatWrapping

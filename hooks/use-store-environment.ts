@@ -30,20 +30,22 @@ export function useStoreEnvironment(config: EnvironmentConfig = {}): StoreEnviro
 
   // Calculate environment intensity - dims as darkness increases
   const environmentIntensity = useMemo(() => {
-    return 1 - darkness * 0.9
+    // Use a steeper curve for darkness to ensure it gets very dark
+    // When darkness is 1, intensity should be close to 0
+    return Math.pow(1 - darkness, 3) * 1.0
   }, [darkness])
 
   // Calculate background color based on darkness
   // darkness: 0 = brighter, 1 = very dark
   const backgroundColor = useMemo(() => {
-    const bgBrightness = Math.round(10 + (40 - 10) * (1 - darkness))
-    return `rgb(${bgBrightness}, ${bgBrightness + 3}, ${bgBrightness + 5})`
+    const bgBrightness = Math.round(2 + (40 - 2) * Math.pow(1 - darkness, 2))
+    return `rgb(${bgBrightness}, ${bgBrightness + 1}, ${bgBrightness + 2})`
   }, [darkness])
 
   // Fog color matches background
   const fogColor = useMemo(() => {
-    const bgBrightness = Math.round(10 + (40 - 10) * (1 - darkness))
-    return `rgb(${bgBrightness}, ${bgBrightness + 3}, ${bgBrightness + 5})`
+    const bgBrightness = Math.round(2 + (40 - 2) * Math.pow(1 - darkness, 2))
+    return `rgb(${bgBrightness}, ${bgBrightness + 1}, ${bgBrightness + 2})`
   }, [darkness])
 
   // Fog distance - closer fog when darker for atmosphere

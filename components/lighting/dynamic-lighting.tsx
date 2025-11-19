@@ -1,6 +1,6 @@
 "use client"
 
-import { useOptimizedShadows } from "./optimized-shadows"
+import { SoftShadows } from "@react-three/drei"
 import { RectAreaLightComponent } from "./rect-area-light"
 import type { ReactNode } from "react"
 
@@ -31,38 +31,34 @@ type DynamicLightingProps = {
 export function DynamicLighting({ config }: DynamicLightingProps) {
   const {
     darkness,
-    // INCREASED VALUES FOR BRIGHTER LIGHTING:
-    // Day mode (darkness=0): ambient=6.0, directional=12.0, spot=7.0 (much brighter)
-    // Night mode (darkness=1): ambient=0.05, directional=0.1, spot=0.05 (much darker)
-    ambientIntensity = { min: 0.05, max: 6.0 },
-    directionalIntensity = { min: 0.1, max: 12.0 },
-    spotIntensity = { min: 0.05, max: 7.0 },
+    // Day mode (darkness=0): ambient=6.0, directional=12.0, spot=7.0
+    // Night mode (darkness=1): ambient=0, directional=0, spot=0
+    ambientIntensity = { min: 0.0, max: 6.0 },
+    directionalIntensity = { min: 0.0, max: 12.0 },
+    spotIntensity = { min: 0.0, max: 7.0 },
   } = config
 
-  // Optimize shadow maps based on performance
-  useOptimizedShadows({ quality: "high" })
+  // Soft shadows applied via SoftShadows component
+  // Exponential curve for dramatic darkening
+  const darknessCurve = Math.pow(darkness, 6)
 
-  // Interpolate between bright and dark with exponential curve for dramatic effect
-  const darknessCurve = Math.pow(darkness, 1.8)
-  
   // Calculate intensities based on darkness curve
-  // When darkness = 0 (bright), use max values. When darkness = 1 (dark), use min values
-  // Day mode (darkness=0): Uses max values for maximum brightness
-  // Night mode (darkness=1): Uses min values for darkness
   const ambient = ambientIntensity.min + (ambientIntensity.max - ambientIntensity.min) * (1 - darknessCurve)
   const directional = directionalIntensity.min + (directionalIntensity.max - directionalIntensity.min) * (1 - darknessCurve)
   const directional2 = ambientIntensity.min + (ambientIntensity.max * 0.5 - ambientIntensity.min) * (1 - darknessCurve)
   const spot = spotIntensity.min + (spotIntensity.max - spotIntensity.min) * (1 - darknessCurve)
-  const rim = ambientIntensity.min + (ambientIntensity.max * 0.4 - ambientIntensity.min) * (1 - darknessCurve)
+  // Reduce rim contribution for darker night
+  const rim = ambientIntensity.min + (ambientIntensity.max * 0.2 - ambientIntensity.min) * (1 - darknessCurve)
 
   return (
     <>
+      <SoftShadows size={1024} samples={8} />
       <ambientLight intensity={ambient} />
-      <directionalLight 
-        position={[10, 10, 5]} 
-        intensity={directional} 
+      <directionalLight
+        position={[10, 10, 5]}
+        intensity={directional}
         castShadow
-        shadow-mapSize={2048}
+        shadow-mapSize={1024}
         shadow-camera-left={-20}
         shadow-camera-right={20}
         shadow-camera-top={20}
@@ -73,13 +69,13 @@ export function DynamicLighting({ config }: DynamicLightingProps) {
         shadow-normalBias={0.02}
       />
       <directionalLight position={[-5, 8, -5]} intensity={directional2} />
-      <spotLight 
-        position={[0, 15, 0]} 
-        angle={0.4} 
-        penumbra={1} 
-        intensity={spot} 
+      <spotLight
+        position={[0, 15, 0]}
+        angle={0.4}
+        penumbra={1}
+        intensity={spot}
         castShadow
-        shadow-mapSize={2048}
+        shadow-mapSize={1024}
         shadow-bias={-0.0001}
         shadow-normalBias={0.02}
       />
@@ -95,4 +91,3 @@ export function DynamicLighting({ config }: DynamicLightingProps) {
     </>
   )
 }
-
