@@ -60,24 +60,6 @@ lamp-shop/
 └── lib/                   # Utility functions
 ```
 
-## Adding 3D Models
-
-To add GLB/GLTF models for lamps:
-
-1. Place model files in `public/models/`
-2. Update `components/models/model-config.ts` with model paths:
-
-```typescript
-export const LAMP_MODELS: Record<string, LampModelConfig> = {
-  "1": {
-    id: "1",
-    modelPath: "/models/lamp-modern-minimalist.glb",
-    scale: 1,
-    lightingPosition: [0, 1.2, 0],
-  },
-  // ... more models
-}
-```
 
 The system will automatically:
 - Preload models on app start

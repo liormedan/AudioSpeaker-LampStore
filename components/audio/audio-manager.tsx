@@ -72,6 +72,45 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
+  // Start analysis loop when ready - מתחיל את הלולאה לעדכון תדרים וזמן
+  useEffect(() => {
+    if (!isReady || !analyserRef.current || !audioContextRef.current) return
+    
+    let isRunning = true
+    
+    // התחל את לולאת העדכון
+    const startAnalysis = () => {
+      if (!isRunning || !analyserRef.current || !audioContextRef.current) return
+      
+      const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount)
+      analyserRef.current.getByteFrequencyData(dataArray)
+      setAudioData(dataArray)
+      
+      // עדכון זמן נוכחי
+      if (isPlaying && audioBufferRef.current) {
+        const current = audioContextRef.current.currentTime - startTimeRef.current
+        if (current >= duration && duration > 0) {
+          setCurrentTime(duration)
+          setIsPlaying(false)
+          pauseTimeRef.current = 0
+        } else if (current >= 0) {
+          setCurrentTime(current)
+        }
+      } else {
+        setCurrentTime(pauseTimeRef.current)
+      }
+      
+      animationFrameRef.current = requestAnimationFrame(startAnalysis)
+    }
+    
+    startAnalysis()
+    
+    return () => {
+      isRunning = false
+      cancelAnimationFrame(animationFrameRef.current)
+    }
+  }, [isReady, isPlaying, duration])
+
   // Update volume
   const setVolume = (val: number) => {
     setVolumeState(val)
@@ -120,14 +159,15 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     
     source.start(0, offset)
     setIsPlaying(true)
-
-    // Start analysis loop
-    updateAnalysis()
     
     source.onended = () => {
-      // Only reset if we reached the end naturally (not stopped manually)
-      // We can check this by comparing currentTime to duration roughly
-      // But for simplicity, we'll just handle the loop/stop logic elsewhere or let it stop
+      // כשהמוזיקה מסתיימת, עצור ועדכן
+      setIsPlaying(false)
+      pauseTimeRef.current = 0
+      setCurrentTime(0)
+      if (sourceNodeRef.current) {
+        sourceNodeRef.current = null
+      }
     }
   }
 
@@ -149,7 +189,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     }
     
     setIsPlaying(false)
-    cancelAnimationFrame(animationFrameRef.current)
+    // לא מבטלים את animationFrame כדי שהסליידר ימשיך להתעדכן
   }
 
   const togglePlay = () => {
@@ -172,27 +212,36 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  // Analysis Loop
-  const updateAnalysis = () => {
+  // Analysis Loop - מעדכן את התדרים ואת הזמן הנוכחי
+  const updateAnalysis = useCallback(() => {
     if (!analyserRef.current || !audioContextRef.current) return
 
     const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount)
     analyserRef.current.getByteFrequencyData(dataArray)
     setAudioData(dataArray)
 
-    // Update current time
-    if (isPlaying) {
+    // Update current time - תמיד מעדכן גם אם לא מנגן (לצורך הסליידר)
+    if (audioContextRef.current && audioBufferRef.current) {
       const current = audioContextRef.current.currentTime - startTimeRef.current
-      if (current >= duration) {
-        stop()
-        pauseTimeRef.current = 0
-        setCurrentTime(0)
+      
+      // בדיקה אם המוזיקה מנגנת
+      if (isPlaying) {
+        if (current >= duration) {
+          stop()
+          pauseTimeRef.current = 0
+          setCurrentTime(0)
+        } else {
+          setCurrentTime(current)
+        }
       } else {
-        setCurrentTime(current)
-        animationFrameRef.current = requestAnimationFrame(updateAnalysis)
+        // גם כשלא מנגן, עדכן את הזמן הנוכחי (לצורך הסליידר)
+        setCurrentTime(pauseTimeRef.current)
       }
+      
+      // המשך לרוץ כל הזמן כדי לעדכן את התדרים והזמן
+      animationFrameRef.current = requestAnimationFrame(updateAnalysis)
     }
-  }
+  }, [isPlaying, duration])
 
   return (
     <AudioContext.Provider

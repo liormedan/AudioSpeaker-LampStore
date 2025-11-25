@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useCallback } from "react"
 import { Canvas, useFrame, useThree } from "@react-three/fiber"
-import { OrbitControls, Environment, PerformanceMonitor, AdaptiveDpr, AdaptiveEvents } from "@react-three/drei"
+import { OrbitControls, Environment, AdaptiveDpr, AdaptiveEvents } from "@react-three/drei"
 import { EffectComposer, Bloom, SSAO } from "@react-three/postprocessing"
 import { StoreFurniture } from "./store-furniture"
 import { LampDisplay } from "./lamp-display"
@@ -29,7 +29,12 @@ import { Color } from "three"
 import { AudioProvider } from "./audio/audio-manager"
 import { AudioUploader } from "./audio/audio-uploader"
 import { FrequencyVisualizer } from "./audio/frequency-visualizer"
+import { SoundWaveEmitter } from "./audio/sound-wave-emitter"
+import { PerformanceMonitor as WavePerformanceMonitor } from "./audio/performance-monitor"
+import { SoundWaveControls } from "./audio/sound-wave-controls"
+import { SpeakerDirectionLines } from "./audio/speaker-direction-lines"
 import { SpeakerModel } from "./models/speaker-model"
+import type { SoundWave } from "./audio/wave-physics"
 
 type StoreShowroomProps = {
   onSelectLamp: (lamp: Lamp | null) => void
@@ -68,6 +73,28 @@ export function StoreShowroom({ onSelectLamp }: StoreShowroomProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [loadingProgress, setLoadingProgress] = useState(0)
   const [physicsEnabled, setPhysicsEnabled] = useState(false) // Toggle for physics mode
+  const [useInstancedRendering, setUseInstancedRendering] = useState(false) // Toggle for instanced rendering optimization
+  const [showPerformanceMonitor, setShowPerformanceMonitor] = useState(false) // Toggle for performance monitor
+  const [visualizationType, setVisualizationType] = useState<"rings" | "surfaces" | "particles" | "all">("rings")
+  const [allWaves, setAllWaves] = useState<SoundWave[]>([]) // כל הגלים מכל ה-Emitters (לשימוש ב-Performance Monitor)
+  const [showSpeakerDirectionLines, setShowSpeakerDirectionLines] = useState(false) // הצגת קווים מהרמקולים
+  
+  // Callbacks ל-onWavesChange עם useCallback כדי למנוע re-renders מיותרים
+  const handleLeftSpeakerWavesChange = useCallback((waves: SoundWave[]) => {
+    setAllWaves((prev) => {
+      // עדכון הגלים מהרמקול השמאלי (הסרת גלים ישנים מאותו רמקול והוספת חדשים)
+      const otherWaves = prev.filter(w => w.origin[0] !== -13)
+      return [...otherWaves, ...waves]
+    })
+  }, [])
+  
+  const handleRightSpeakerWavesChange = useCallback((waves: SoundWave[]) => {
+    setAllWaves((prev) => {
+      // עדכון הגלים מהרמקול הימני (הסרת גלים ישנים מאותו רמקול והוספת חדשים)
+      const otherWaves = prev.filter(w => w.origin[0] !== 13)
+      return [...otherWaves, ...waves]
+    })
+  }, [])
 
   // Use custom hook for environment settings
   const environment = useStoreEnvironment({ darkness })
@@ -119,6 +146,16 @@ export function StoreShowroom({ onSelectLamp }: StoreShowroomProps) {
           />
         )}
         <DimmerControl darkness={darkness} onDarknessChange={setDarkness} />
+        <SoundWaveControls
+          visualizationType={visualizationType}
+          onVisualizationTypeChange={setVisualizationType}
+          useInstanced={useInstancedRendering}
+          onUseInstancedChange={setUseInstancedRendering}
+          showPerformanceMonitor={showPerformanceMonitor}
+          onShowPerformanceMonitorChange={setShowPerformanceMonitor}
+          showSpeakerDirectionLines={showSpeakerDirectionLines}
+          onShowSpeakerDirectionLinesChange={setShowSpeakerDirectionLines}
+        />
         <AudioUploader />
 
         <Canvas
@@ -126,8 +163,8 @@ export function StoreShowroom({ onSelectLamp }: StoreShowroomProps) {
           style={{ background: environment.backgroundColor }}
           shadows
         >
-          {/* Performance monitoring */}
-          <PerformanceMonitor />
+          {/* Performance monitoring - from @react-three/drei */}
+          {/* Note: WavePerformanceMonitor is available but disabled by default */}
 
           {/* Adaptive performance - adjusts DPR and event handling based on FPS */}
           <AdaptiveDpr pixelated />
@@ -168,6 +205,40 @@ export function StoreShowroom({ onSelectLamp }: StoreShowroomProps) {
             {/* Audio Speakers in Back Corners */}
             <SpeakerModel position={[-13, 0, -8]} rotation={[0, Math.PI / 4, 0]} />
             <SpeakerModel position={[13, 0, -8]} rotation={[0, -Math.PI / 4, 0]} />
+
+            {/* Speaker Direction Lines - קווים אופקיים מכל האלמנטים של הרמקולים */}
+            <SpeakerDirectionLines
+              speakerPositions={[
+                { position: [-13, 0, -8], rotation: [0, Math.PI / 4, 0] },
+                { position: [13, 0, -8], rotation: [0, -Math.PI / 4, 0] }
+              ]}
+              enabled={showSpeakerDirectionLines}
+            />
+
+            {/* Sound Wave Emitters - גלי קול הנעים בחדר מכל רמקול (רוכבים על הקווים) */}
+            <SoundWaveEmitter 
+              position={[-13, 0, -8]}
+              rotation={[0, Math.PI / 4, 0]}
+              visualizationType={visualizationType}
+              useInstanced={useInstancedRendering}
+              onWavesChange={handleLeftSpeakerWavesChange}
+            />
+            <SoundWaveEmitter 
+              position={[13, 0, -8]}
+              rotation={[0, -Math.PI / 4, 0]}
+              visualizationType={visualizationType}
+              useInstanced={useInstancedRendering}
+              onWavesChange={handleRightSpeakerWavesChange}
+            />
+
+            {/* Performance Monitor - מציג FPS וסטטיסטיקות גלים */}
+            {showPerformanceMonitor && (
+              <WavePerformanceMonitor 
+                waves={allWaves}
+                enabled={showPerformanceMonitor}
+                position="top-right"
+              />
+            )}
 
             {/* Frequency Visualizer */}
             <FrequencyVisualizer position={[0, 5, -10]} />
