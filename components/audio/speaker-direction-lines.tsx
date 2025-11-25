@@ -113,15 +113,15 @@ export function SpeakerDirectionLines({
         // צבע שונה לפי סוג ה-driver
         const color = driver.type === "tweeter" ? "#ff00ff" : driver.type === "mid" ? "#00ff00" : "#00ffff"
         
+        const material = new THREE.LineBasicMaterial({
+          color: color,
+          transparent: true,
+          opacity: 0.6,
+          linewidth: 2,
+        })
+        
         allLines.push(
-          <line key={`line-${speakerIndex}-${lineIndex++}`} geometry={geometry}>
-            <lineBasicMaterial
-              color={color}
-              transparent
-              opacity={0.6}
-              linewidth={2}
-            />
-          </line>
+          <primitive key={`line-${speakerIndex}-${lineIndex++}`} object={new THREE.Line(geometry, material)} />
         )
       })
     })
