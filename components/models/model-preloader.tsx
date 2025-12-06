@@ -3,6 +3,10 @@
 import { useEffect, useState } from "react"
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js"
 
+// Create a shared loader instance with caching
+// This improves performance by reusing the same loader and caching models
+const sharedLoader = new GLTFLoader()
+
 type ModelPreloaderProps = {
   /**
    * Array of model paths to preload
@@ -41,12 +45,12 @@ export function ModelPreloader({
     let completed = 0
     const total = modelPaths.length
 
-    // Preload models using GLTFLoader directly
-    const loader = new GLTFLoader()
+    // Preload models using shared GLTFLoader instance for better caching
     const loadPromises = modelPaths.map((path) => {
       return new Promise<void>((resolve) => {
         // Check if file exists first (optional - will fail gracefully anyway)
-        loader.load(
+        // Using shared loader for better caching
+        sharedLoader.load(
           path,
           () => {
             completed++
@@ -115,9 +119,9 @@ export function useModelPreloader(modelPaths: string[]) {
     let completed = 0
     const total = modelPaths.length
 
-    const loader = new GLTFLoader()
+    // Use shared loader for better caching
     modelPaths.forEach((path) => {
-      loader.load(
+      sharedLoader.load(
         path,
         () => {
           completed++

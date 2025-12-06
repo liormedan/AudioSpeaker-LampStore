@@ -24,16 +24,33 @@ import type { Lamp } from "./store-scene"
 import type { Group } from "three"
 import { Color } from "three"
 
-// Audio Components
+// Audio Components - lazy loaded for better performance
 import { AudioProvider } from "./audio/audio-manager"
-import { AudioUploader } from "./audio/audio-uploader"
-import { FrequencyVisualizer } from "./audio/frequency-visualizer"
-import { SoundWaveEmitter } from "./audio/sound-wave-emitter"
-import { PerformanceMonitor as WavePerformanceMonitor } from "./audio/performance-monitor"
-import { SoundWaveControls } from "./audio/sound-wave-controls"
-import { SpeakerDirectionLines } from "./audio/speaker-direction-lines"
-import { SpeakerModel } from "./models/speaker-model"
+import dynamic from "next/dynamic"
 import type { SoundWave } from "./audio/wave-physics"
+
+// Lazy load audio components that are not immediately visible
+const AudioUploader = dynamic(() => import("./audio/audio-uploader").then(mod => ({ default: mod.AudioUploader })), {
+  ssr: false,
+})
+const FrequencyVisualizer = dynamic(() => import("./audio/frequency-visualizer").then(mod => ({ default: mod.FrequencyVisualizer })), {
+  ssr: false,
+})
+const SoundWaveEmitter = dynamic(() => import("./audio/sound-wave-emitter").then(mod => ({ default: mod.SoundWaveEmitter })), {
+  ssr: false,
+})
+const WavePerformanceMonitor = dynamic(() => import("./audio/performance-monitor").then(mod => ({ default: mod.PerformanceMonitor })), {
+  ssr: false,
+})
+const SoundWaveControls = dynamic(() => import("./audio/sound-wave-controls").then(mod => ({ default: mod.SoundWaveControls })), {
+  ssr: false,
+})
+const SpeakerDirectionLines = dynamic(() => import("./audio/speaker-direction-lines").then(mod => ({ default: mod.SpeakerDirectionLines })), {
+  ssr: false,
+})
+const SpeakerModel = dynamic(() => import("./models/speaker-model").then(mod => ({ default: mod.SpeakerModel })), {
+  ssr: false,
+})
 
 type StoreShowroomProps = {
   onSelectLamp: (lamp: Lamp | null) => void

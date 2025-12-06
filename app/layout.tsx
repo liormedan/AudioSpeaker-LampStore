@@ -81,6 +81,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" dir="ltr">
+      <head>
+        {/* Preconnect to improve loading performance */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+        {/* Preload critical resources */}
+        <link rel="preload" as="script" href="/_next/static/chunks/main.js" />
+      </head>
       <body className={`font-sans antialiased`}>
         {children}
         <Analytics />
